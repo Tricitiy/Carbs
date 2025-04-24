@@ -71,11 +71,11 @@ miscButtonCorner.Parent = miscButton
 -- Auto Parry Text (hidden by default)
 local autoParryText = Instance.new("TextLabel")
 autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0.1, 20, 0, 10)
+autoParryText.Position = UDim2.new(0.1, 40, 0, 25)
 autoParryText.BackgroundTransparency = 1
 autoParryText.Text = "Auto Parry"
 autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoParryText.TextSize = 9
+autoParryText.TextSize = 13
 autoParryText.Font = Enum.Font.GothamBold
 autoParryText.TextXAlignment = Enum.TextXAlignment.Center
 autoParryText.TextYAlignment = Enum.TextYAlignment.Center
