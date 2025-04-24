@@ -107,26 +107,53 @@ local knobCorner = Instance.new("UICorner")
 knobCorner.CornerRadius = UDim.new(0, 12)
 knobCorner.Parent = knob
 
+-- Auto-Parry Logic Setup
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local autoParryEnabled = false
+
 -- Toggle visibility when Misc button is clicked
-local sliderToggled = false
 miscButton.MouseButton1Click:Connect(function()
-	if autoParryText.Visible then
-		autoParryText.Visible = false
-	else
-		autoParryText.Visible = true
-	end
+    autoParryText.Visible = not autoParryText.Visible
 end)
 
 -- Slider Button functionality
 sliderButton.MouseButton1Click:Connect(function()
-	sliderToggled = not sliderToggled
-	if sliderToggled then
-		knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
-		knob.BackgroundTransparency = 0
-		sliderButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0) -- Green when on
-	else
-		knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
-		knob.BackgroundTransparency = 0.2
-		sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Gray when off
-	end
+    autoParryEnabled = not autoParryEnabled
+    if autoParryEnabled then
+        knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
+        knob.BackgroundTransparency = 0
+        sliderButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0) -- Green
+    else
+        knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
+        knob.BackgroundTransparency = 0.2
+        sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Gray
+    end
+end)
+
+-- Auto-Parry Execution
+RunService.RenderStepped:Connect(function()
+    if not autoParryEnabled then return end
+    local char = player.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    for _, ball in ipairs(workspace:GetDescendants()) do
+        if ball:IsA("Part") and ball.Name:lower():find("ball") then
+            local distance = (root.Position - ball.Position).Magnitude
+            if distance <= 20 then
+                local VirtualInputManager = game:GetService("VirtualInputManager")
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+                task.wait(0.05)
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                break
+            end
+        end
+    end
 end)
