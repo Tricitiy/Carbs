@@ -77,7 +77,7 @@ RunService.RenderStepped:Connect(function()
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
                 local distance = (root.Position - ball.Position).Magnitude
-                if distance <= 20 then
+                if distance <= 25 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                     task.wait(0.05)
