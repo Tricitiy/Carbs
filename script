@@ -60,6 +60,7 @@ madeByLabel.TextXAlignment = Enum.TextXAlignment.Center
 madeByLabel.TextYAlignment = Enum.TextYAlignment.Center
 
 -- AUTO PARRY LOGIC
+local line = nil
 RunService.RenderStepped:Connect(function()
     character = player.Character
     if not character then return end
@@ -68,23 +69,40 @@ RunService.RenderStepped:Connect(function()
 
     -- Auto Parry logic
     if autoParry then
+        local ballTargeting = false
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
                 local distance = (root.Position - ball.Position).Magnitude
-                if distance <= 20 then  -- Increased distance
-                    -- Ensure that humanoid movement isn't affected by parry
-                    humanoid.PlatformStand = true  -- Temporarily disable movement controls
+                if distance <= 20 then  -- Adjust distance as needed
+                    ballTargeting = true
+                    
+                    -- Create or update the line between the torso and the ball
+                    if not line then
+                        line = Instance.new("Part", workspace)
+                        line.Size = Vector3.new(0.1, 0.1, distance)
+                        line.Anchored = true
+                        line.CanCollide = false
+                        line.Color = Color3.fromRGB(0, 255, 0)
+                    else
+                        line.Size = Vector3.new(0.1, 0.1, distance)
+                    end
+                    line.CFrame = CFrame.new(root.Position, ball.Position) * CFrame.new(0, 0, -(distance / 2)) -- Positioning the line
 
-                    -- Simulate press F (use VirtualInputManager)
+                    -- Simulate parry press
                     local VirtualInputManager = game:GetService("VirtualInputManager")
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                     task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
 
-                    humanoid.PlatformStand = false  -- Re-enable movement controls
                     break
                 end
             end
+        end
+
+        -- If no ball is targeting, remove the line
+        if not ballTargeting and line then
+            line:Destroy()
+            line = nil
         end
     end
 end)
