@@ -73,7 +73,7 @@ RunService.RenderStepped:Connect(function()
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
                 local distance = (root.Position - ball.Position).Magnitude
-                if distance <= 20 then  -- Adjust distance as needed
+                if distance <= 26 then  -- Adjust distance as needed
                     ballTargeting = true
                     
                     -- Create or update the line between the torso and the ball
