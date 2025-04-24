@@ -12,8 +12,8 @@ local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 250, 0, 300)
-mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+mainFrame.Size = UDim2.new(0, 200, 0, 240)  -- Reduced size
+mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)  -- Slightly adjusted position
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.BorderSizePixel = 5
 mainFrame.Visible = true
@@ -26,14 +26,6 @@ minimizeButton.TextColor3 = Color3.new(1,1,1)
 minimizeButton.Text = "Open Menu"
 minimizeButton.Visible = false
 
--- Close Button
-local closeButton = Instance.new("TextButton", mainFrame)
-closeButton.Size = UDim2.new(0, 100, 0, 30)
-closeButton.Position = UDim2.new(0.75, 0, 0, 0)
-closeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-closeButton.TextColor3 = Color3.new(1, 1, 1)
-closeButton.Text = "Close"
-
 -- Open/Close GUI
 UserInputService.InputBegan:Connect(function(input, processed)
     if input.KeyCode == Enum.KeyCode.RightShift and not processed then
@@ -42,23 +34,11 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Close Button functionality
-closeButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    minimizeButton.Visible = true
-end)
-
--- Minimize Button functionality
-minimizeButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = true
-    minimizeButton.Visible = false
-end)
-
 -- AUTO PARRY BUTTON
 local autoParry = false
 local parryButton = Instance.new("TextButton", mainFrame)
-parryButton.Size = UDim2.new(0, 200, 0, 50)
-parryButton.Position = UDim2.new(0, 25, 0, 20)
+parryButton.Size = UDim2.new(0, 170, 0, 40)  -- Reduced size
+parryButton.Position = UDim2.new(0, 15, 0, 20)  -- Adjusted position
 parryButton.Text = "Auto-Parry: OFF"
 parryButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 parryButton.TextColor3 = Color3.new(1,1,1)
@@ -68,7 +48,18 @@ parryButton.MouseButton1Click:Connect(function()
     parryButton.Text = "Auto-Parry: " .. (autoParry and "ON" or "OFF")
 end)
 
--- ACTUAL AUTO PARRY
+-- Made By Tricitiy label (placed below the Auto Parry button)
+local madeByLabel = Instance.new("TextLabel", mainFrame)
+madeByLabel.Size = UDim2.new(0, 170, 0, 20)
+madeByLabel.Position = UDim2.new(0, 15, 0, 70)  -- Positioned below the Auto Parry button
+madeByLabel.Text = "Made by Tricitiy"
+madeByLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+madeByLabel.TextSize = 12
+madeByLabel.TextXAlignment = Enum.TextXAlignment.Center
+madeByLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+-- AUTO PARRY LOGIC
 RunService.RenderStepped:Connect(function()
     character = player.Character
     if not character then return end
@@ -79,26 +70,31 @@ RunService.RenderStepped:Connect(function()
     if autoParry then
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
+                -- Calculate the distance between the ball and the player
                 local distance = (root.Position - ball.Position).Magnitude
-                if distance <= 20 then
+                
+                -- Calculate the direction of the ball's velocity
+                local velocityDirection = ball.Velocity.Unit
+                local directionToPlayer = (root.Position - ball.Position).Unit
+
+                -- Check if the ball is moving toward the player
+                local dotProduct = velocityDirection:Dot(directionToPlayer)
+
+                -- Trigger auto parry only if the ball is close enough and moving towards the player
+                if distance <= 15 and dotProduct > 0.5 then  -- dotProduct > 0.5 means the ball is roughly pointing toward the player
+                    -- Ensure that humanoid movement isn't affected by parry
+                    humanoid.PlatformStand = true  -- Temporarily disable movement controls
+
                     -- Simulate press F (use VirtualInputManager)
                     local VirtualInputManager = game:GetService("VirtualInputManager")
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                    task.wait(0.05)
+                    task.wait(0.03)  -- Adjusted wait time to 0.03
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+
+                    humanoid.PlatformStand = false  -- Re-enable movement controls
                     break
                 end
             end
         end
     end
 end)
-
--- "Made By Tricitiy" Text at the bottom
-local footerText = Instance.new("TextLabel", mainFrame)
-footerText.Size = UDim2.new(0, 250, 0, 30)
-footerText.Position = UDim2.new(0, 0, 1, -30)
-footerText.Text = "Made By Tricitiy"
-footerText.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-footerText.TextColor3 = Color3.new(1, 1, 1)
-footerText.TextSize = 14
-footerText.TextAlign = Enum.TextAlign.Center
