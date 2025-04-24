@@ -1,104 +1,25 @@
--- SERVICES
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.ResetOnSpawn = false
+-- Services
+local Player = game.Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- MAIN GUI FRAME
-local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 300, 0, 250)  -- Adjusted size
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)  -- Center the menu
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainFrame.BorderSizePixel = 5
-mainFrame.Visible = true
-mainFrame.Active = true
-mainFrame.Draggable = true
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = PlayerGui
+screenGui.ResetOnSpawn = false
 
--- TITLE TEXT
-local title = Instance.new("TextLabel", mainFrame)
-title.Size = UDim2.new(0, 280, 0, 30)
-title.Position = UDim2.new(0, 10, 0, 10)
-title.Text = "Freya"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 24
-title.TextColor3 = Color3.fromRGB(255, 105, 180)  -- Pink color
-title.BackgroundTransparency = 1
+-- Create the main frame (landscape rectangle with rounded corners)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 500, 0, 200)  -- Big rectangle (500 width, 200 height)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -100)  -- Center the frame on the screen
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)  -- Dark background color
+mainFrame.BackgroundTransparency = 0  -- No transparency
+mainFrame.BorderSizePixel = 0  -- No border
+mainFrame.Parent = screenGui
 
--- X BUTTON (Close button)
-local closeButton = Instance.new("TextButton", mainFrame)
-closeButton.Size = UDim2.new(0, 40, 0, 40)
-closeButton.Position = UDim2.new(1, -50, 0, 10)  -- Top right corner
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-closeButton.Text = "X"
-closeButton.TextSize = 24
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextButtonMouseEnter:Connect(function()
-    closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)  -- Darker red when hovered
-end)
-closeButton.TextButtonMouseLeave:Connect(function()
-    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Back to normal red
-end)
+-- Make the corners rounded
+mainFrame.ClipsDescendants = true
+local cornerRadius = UDim.new(0, 20)  -- Adjust this for more or less rounded corners
 
--- Minimized Icon (appears when the GUI is closed)
-local minimizedIcon = Instance.new("TextLabel", gui)
-minimizedIcon.Size = UDim2.new(0, 50, 0, 50)
-minimizedIcon.Position = UDim2.new(0.5, -25, 0.5, -25)  -- Center the icon
-minimizedIcon.Text = "Freya"
-minimizedIcon.Font = Enum.Font.GothamBold
-minimizedIcon.TextSize = 14
-minimizedIcon.TextColor3 = Color3.fromRGB(255, 105, 180)  -- Pink color
-minimizedIcon.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-minimizedIcon.TextButtonMouseEnter:Connect(function()
-    minimizedIcon.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Darker gray when hovered
-end)
-minimizedIcon.TextButtonMouseLeave:Connect(function()
-    minimizedIcon.BackgroundColor3 = Color3.fromRGB(35, 35, 35)  -- Back to normal gray
-end)
-minimizedIcon.Visible = false
-minimizedIcon.Active = true
-minimizedIcon.Draggable = true
-
--- Toggle visibility of the main frame and minimized icon
-closeButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    minimizedIcon.Visible = true
-end)
-
--- When clicked on the minimized icon, reopen the main menu
-minimizedIcon.MouseButton1Click:Connect(function()
-    mainFrame.Visible = true
-    minimizedIcon.Visible = false
-end)
-
--- AUTO PARRY BUTTON (just for illustration)
-local autoParry = false
-local parryButton = Instance.new("TextButton", mainFrame)
-parryButton.Size = UDim2.new(0, 280, 0, 40)
-parryButton.Position = UDim2.new(0, 10, 0, 50)
-parryButton.Text = "Auto-Parry: OFF"
-parryButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-parryButton.TextColor3 = Color3.new(1,1,1)
-
-parryButton.MouseButton1Click:Connect(function()
-    autoParry = not autoParry
-    parryButton.Text = "Auto-Parry: " .. (autoParry and "ON" or "OFF")
-end)
-
--- MORE COMING SOON LABEL
-local moreComingSoon = Instance.new("TextLabel", mainFrame)
-moreComingSoon.Size = UDim2.new(0, 280, 0, 30)
-moreComingSoon.Position = UDim2.new(0, 10, 0, 100)
-moreComingSoon.Text = "More Coming Soon"
-moreComingSoon.TextSize = 14
-moreComingSoon.TextColor3 = Color3.fromRGB(255, 255, 255)
-moreComingSoon.BackgroundTransparency = 1
-
--- MADE BY TRICITIY LABEL
-local madeByLabel = Instance.new("TextLabel", mainFrame)
-madeByLabel.Size = UDim2.new(0, 280, 0, 20)
-madeByLabel.Position = UDim2.new(0, 10, 0, 210)
-madeByLabel.Text = "Made by Tricitiy"
-madeByLabel.TextSize = 16
-madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-madeByLabel.BackgroundTransparency = 1
-madeByLabel.TextXAlignment = Enum.TextXAlignment.Center
+local corner1 = Instance.new("UICorner")  -- Create a UICorner for rounded edges
+corner1.CornerRadius = cornerRadius
+corner1.Parent = mainFrame
