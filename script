@@ -98,7 +98,7 @@ sliderButtonCorner.Parent = sliderButton
 
 -- Knob
 local knob = Instance.new("Frame")
-knob.Size = UDim2.new(0, 20, 0, 30)
+knob.Size = UDim2.new(0, 20, 0, 20)
 knob.Position = UDim2.new(0, 1, 0, 1)
 knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 knob.BorderSizePixel = 0
@@ -110,7 +110,7 @@ knobCorner.Parent = knob
 
 -- Toggle visibility when Misc button is clicked
 local sliderToggled = false
-local autoParryToggled = false
+local autoParry = false -- Default to auto parry being off
 
 miscButton.MouseButton1Click:Connect(function()
     -- Toggle visibility of Auto Parry text and slider button
@@ -134,5 +134,36 @@ sliderButton.MouseButton1Click:Connect(function()
         knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
         knob.BackgroundTransparency = 0.2
         sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Gray when off
+    end
+
+    -- Update autoParry when the slider toggles
+    autoParry = sliderToggled
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+RunService.RenderStepped:Connect(function()
+    character = player.Character
+    if not character then return end
+
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if autoParry then
+        for _, ball in ipairs(workspace:GetDescendants()) do
+            if ball:IsA("Part") and ball.Name:lower():find("ball") then
+                local distance = (root.Position - ball.Position).Magnitude
+                if distance <= 20 then
+                    local VirtualInputManager = game:GetService("VirtualInputManager")
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+                    task.wait(0.05)
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                    break
+                end
+            end
+        end
     end
 end)
