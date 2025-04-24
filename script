@@ -1,50 +1,80 @@
 -- SERVICES
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- UI SETUP
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
+-- MAIN GUI FRAME
 local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 160, 0, 130)
-mainFrame.Position = UDim2.new(0.5, -80, 0.3, 0) -- Positioned at top center
+mainFrame.Size = UDim2.new(0, 300, 0, 250)  -- Adjusted size
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)  -- Center the menu
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainFrame.BorderSizePixel = 3
+mainFrame.BorderSizePixel = 5
 mainFrame.Visible = true
+mainFrame.Active = true
+mainFrame.Draggable = true
 
-local minimizeButton = Instance.new("TextButton", gui)
-minimizeButton.Size = UDim2.new(0, 100, 0, 30)
-minimizeButton.Position = UDim2.new(0.5, -50, 0.05, 0) -- Positioned at the top center of the screen
-minimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-minimizeButton.TextColor3 = Color3.new(1,1,1)
-minimizeButton.Text = "Open Menu"
-minimizeButton.Visible = false
+-- TITLE TEXT
+local title = Instance.new("TextLabel", mainFrame)
+title.Size = UDim2.new(0, 280, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 10)
+title.Text = "Freya"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.TextColor3 = Color3.fromRGB(255, 105, 180)  -- Pink color
+title.BackgroundTransparency = 1
 
--- Open/Close GUI
-UserInputService.InputBegan:Connect(function(input, processed)
-    if input.KeyCode == Enum.KeyCode.RightShift and not processed then
-        mainFrame.Visible = not mainFrame.Visible
-        minimizeButton.Visible = not mainFrame.Visible
-    end
+-- X BUTTON (Close button)
+local closeButton = Instance.new("TextButton", mainFrame)
+closeButton.Size = UDim2.new(0, 40, 0, 40)
+closeButton.Position = UDim2.new(1, -50, 0, 10)  -- Top right corner
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.Text = "X"
+closeButton.TextSize = 24
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextButtonMouseEnter:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)  -- Darker red when hovered
+end)
+closeButton.TextButtonMouseLeave:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Back to normal red
 end)
 
-minimizeButton.MouseButton1Click:Connect(function()
+-- Minimized Icon (appears when the GUI is closed)
+local minimizedIcon = Instance.new("TextLabel", gui)
+minimizedIcon.Size = UDim2.new(0, 50, 0, 50)
+minimizedIcon.Position = UDim2.new(0.5, -25, 0.5, -25)  -- Center the icon
+minimizedIcon.Text = "Freya"
+minimizedIcon.Font = Enum.Font.GothamBold
+minimizedIcon.TextSize = 14
+minimizedIcon.TextColor3 = Color3.fromRGB(255, 105, 180)  -- Pink color
+minimizedIcon.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+minimizedIcon.TextButtonMouseEnter:Connect(function()
+    minimizedIcon.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Darker gray when hovered
+end)
+minimizedIcon.TextButtonMouseLeave:Connect(function()
+    minimizedIcon.BackgroundColor3 = Color3.fromRGB(35, 35, 35)  -- Back to normal gray
+end)
+minimizedIcon.Visible = false
+minimizedIcon.Active = true
+minimizedIcon.Draggable = true
+
+-- Toggle visibility of the main frame and minimized icon
+closeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    minimizedIcon.Visible = true
+end)
+
+-- When clicked on the minimized icon, reopen the main menu
+minimizedIcon.MouseButton1Click:Connect(function()
     mainFrame.Visible = true
-    minimizeButton.Visible = false
+    minimizedIcon.Visible = false
 end)
 
--- AUTO PARRY BUTTON
+-- AUTO PARRY BUTTON (just for illustration)
 local autoParry = false
 local parryButton = Instance.new("TextButton", mainFrame)
-parryButton.Size = UDim2.new(0, 130, 0, 30)
-parryButton.Position = UDim2.new(0, 15, 0, 15)
+parryButton.Size = UDim2.new(0, 280, 0, 40)
+parryButton.Position = UDim2.new(0, 10, 0, 50)
 parryButton.Text = "Auto-Parry: OFF"
 parryButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 parryButton.TextColor3 = Color3.new(1,1,1)
@@ -54,35 +84,21 @@ parryButton.MouseButton1Click:Connect(function()
     parryButton.Text = "Auto-Parry: " .. (autoParry and "ON" or "OFF")
 end)
 
--- Made By Label
+-- MORE COMING SOON LABEL
+local moreComingSoon = Instance.new("TextLabel", mainFrame)
+moreComingSoon.Size = UDim2.new(0, 280, 0, 30)
+moreComingSoon.Position = UDim2.new(0, 10, 0, 100)
+moreComingSoon.Text = "More Coming Soon"
+moreComingSoon.TextSize = 14
+moreComingSoon.TextColor3 = Color3.fromRGB(255, 255, 255)
+moreComingSoon.BackgroundTransparency = 1
+
+-- MADE BY TRICITIY LABEL
 local madeByLabel = Instance.new("TextLabel", mainFrame)
-madeByLabel.Size = UDim2.new(0, 130, 0, 20)
-madeByLabel.Position = UDim2.new(0, 15, 0, 60)
+madeByLabel.Size = UDim2.new(0, 280, 0, 20)
+madeByLabel.Position = UDim2.new(0, 10, 0, 210)
 madeByLabel.Text = "Made by Tricitiy"
-madeByLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+madeByLabel.TextSize = 16
 madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-madeByLabel.TextSize = 12
+madeByLabel.BackgroundTransparency = 1
 madeByLabel.TextXAlignment = Enum.TextXAlignment.Center
-madeByLabel.TextYAlignment = Enum.TextYAlignment.Center
-
--- COLOR-BASED AUTO PARRY LOGIC
-RunService.RenderStepped:Connect(function()
-    character = player.Character
-    if not character then return end
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-
-    if autoParry then
-        for _, ball in ipairs(workspace:GetDescendants()) do
-            if ball:IsA("Part") and ball.Name:lower():find("ball") then
-                local distance = (root.Position - ball.Position).Magnitude
-                if ball.Color == Color3.fromRGB(255, 0, 0) and distance <= 20 then
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-                    break
-                end
-            end
-        end
-    end
-end)
