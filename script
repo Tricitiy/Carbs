@@ -68,20 +68,21 @@ local miscButtonCorner = Instance.new("UICorner")
 miscButtonCorner.CornerRadius = UDim.new(0, 12)
 miscButtonCorner.Parent = miscButton
 
--- Auto Parry TextLabel (next to sidebar)
+-- Auto Parry Text (hidden by default)
 local autoParryText = Instance.new("TextLabel")
 autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0, sideBar.AbsoluteSize.X + 10, 0, 10)
-autoParryText.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-autoParryText.BackgroundTransparency = 0.2
+autoParryText.Position = UDim2.new(0.1, 20, 0, 10)
+autoParryText.BackgroundTransparency = 1
 autoParryText.Text = "Auto Parry"
 autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoParryText.TextSize = 9
 autoParryText.Font = Enum.Font.GothamBold
 autoParryText.TextXAlignment = Enum.TextXAlignment.Center
 autoParryText.TextYAlignment = Enum.TextYAlignment.Center
+autoParryText.Visible = false
 autoParryText.Parent = mainFrame
 
-local autoParryTextCorner = Instance.new("UICorner")
-autoParryTextCorner.CornerRadius = UDim.new(0, 12)
-autoParryTextCorner.Parent = autoParryText
+-- Show the Auto Parry text when Misc button is clicked
+miscButton.MouseButton1Click:Connect(function()
+	autoParryText.Visible = true
+end)
