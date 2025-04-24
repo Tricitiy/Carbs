@@ -1,6 +1,7 @@
 -- Services
 local Player = game.Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -9,11 +10,12 @@ screenGui.ResetOnSpawn = false
 
 -- Create the main frame (landscape rectangle with rounded corners)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 500, 0, 200)  -- Big rectangle (500 width, 200 height)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -100)  -- Center the frame on the screen
+mainFrame.Size = UDim2.new(0, 500, 0, 300)  -- Set the height to 300
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)  -- Center the frame on the screen
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)  -- Dark background color
 mainFrame.BackgroundTransparency = 0  -- No transparency
 mainFrame.BorderSizePixel = 0  -- No border
+mainFrame.ZIndex = 10  -- Ensure it's on top of other UI elements
 mainFrame.Parent = screenGui
 
 -- Make the corners rounded
@@ -23,3 +25,45 @@ local cornerRadius = UDim.new(0, 20)  -- Adjust this for more or less rounded co
 local corner1 = Instance.new("UICorner")  -- Create a UICorner for rounded edges
 corner1.CornerRadius = cornerRadius
 corner1.Parent = mainFrame
+
+-- Add "Freya" text
+local freyaText = Instance.new("TextLabel")
+freyaText.Size = UDim2.new(0, 500, 0, 40)  -- Width of the frame, height of 40 for text
+freyaText.Position = UDim2.new(0, 0, 0, 0)  -- Positioned at the top of the frame
+freyaText.Text = "Freya"
+freyaText.TextColor3 = Color3.fromRGB(255, 182, 193)  -- Light Pink color
+freyaText.TextSize = 32  -- Text size
+freyaText.Font = Enum.Font.GothamBold  -- Using GothamBold as the closest match (you can try others if you prefer)
+freyaText.TextStrokeTransparency = 0.8  -- Add stroke to make text stand out
+freyaText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)  -- Black stroke color for contrast
+freyaText.BackgroundTransparency = 1  -- Transparent background
+freyaText.Parent = mainFrame
+
+-- Movable functionality
+local dragging = false
+local dragInput, mousePos, framePos
+
+-- Function to start dragging
+mainFrame.InputBegan:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessed then
+        dragging = true
+        dragInput = input
+        mousePos = UserInputService:GetMouseLocation()
+        framePos = mainFrame.Position
+    end
+end)
+
+-- Function to stop dragging
+UserInputService.InputEnded:Connect(function(input)
+    if input == dragInput then
+        dragging = false
+    end
+end)
+
+-- Function to handle dragging movement
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = UserInputService:GetMouseLocation() - mousePos
+        mainFrame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
