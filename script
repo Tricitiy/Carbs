@@ -1,90 +1,114 @@
--- SERVICES
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+-- UI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game:GetService("CoreGui")
 
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 450, 0, 275)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
--- UI SETUP
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.ResetOnSpawn = false
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
 
-local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 150, 0, 120)  -- Smaller size
-mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainFrame.BorderSizePixel = 2
-mainFrame.Visible = true
+-- HeadBar
+local headBar = Instance.new("Frame")
+headBar.Size = UDim2.new(1, 0, 0, 40)
+headBar.Position = UDim2.new(0, 0, 0, 0)
+headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+headBar.Parent = mainFrame
 
-local minimizeButton = Instance.new("TextButton", gui)
-minimizeButton.Size = UDim2.new(0, 100, 0, 30)
-minimizeButton.Position = UDim2.new(0.05, 0, 0.28, 0)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-minimizeButton.TextColor3 = Color3.new(1,1,1)
-minimizeButton.Text = "Open Menu"
-minimizeButton.Visible = false
+local headCorner = Instance.new("UICorner")
+headCorner.CornerRadius = UDim.new(0, 12)
+headCorner.Parent = headBar
 
--- Open/Close GUI with RightShift
-UserInputService.InputBegan:Connect(function(input, processed)
-    if input.KeyCode == Enum.KeyCode.RightShift and not processed then
-        local currentlyVisible = mainFrame.Visible
-        mainFrame.Visible = not currentlyVisible
-        minimizeButton.Visible = currentlyVisible
-    end
+-- Title Text in HeadBar
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, 0, 1, 0)
+titleText.Position = UDim2.new(0, 0, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Death Ball GUI"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 18
+titleText.Parent = headBar
+
+-- SideBar
+local sideBar = Instance.new("Frame")
+sideBar.Size = UDim2.new(1/3, 0, 1, -40)
+sideBar.Position = UDim2.new(0, 0, 0, 40)
+sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sideBar.Parent = mainFrame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 12)
+sideCorner.Parent = sideBar
+
+-- Parry Button on Sidebar
+local parryButton = Instance.new("TextButton")
+parryButton.Size = UDim2.new(1, -20, 0, 30)
+parryButton.Position = UDim2.new(0, 10, 0, 10)
+parryButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+parryButton.Text = "Parry"
+parryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+parryButton.Font = Enum.Font.GothamBold
+parryButton.TextSize = 14
+parryButton.Parent = sideBar
+
+local parryBtnCorner = Instance.new("UICorner")
+parryBtnCorner.CornerRadius = UDim.new(0, 6)
+parryBtnCorner.Parent = parryButton
+
+-- Auto Parry Label
+local autoParryLabel = Instance.new("TextLabel")
+autoParryLabel.Size = UDim2.new(0, 100, 0, 20)
+autoParryLabel.Position = UDim2.new(0.5, -50, 0.5, -40)
+autoParryLabel.BackgroundTransparency = 1
+autoParryLabel.Text = "Auto Parry"
+autoParryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoParryLabel.TextSize = 16
+autoParryLabel.Font = Enum.Font.Gotham
+autoParryLabel.Visible = false
+autoParryLabel.Parent = mainFrame
+
+-- Toggle Button
+local parryToggle = Instance.new("TextButton")
+parryToggle.Size = UDim2.new(0, 100, 0, 30)
+parryToggle.Position = UDim2.new(0.5, -50, 0.5, -10)
+parryToggle.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+parryToggle.Text = "OFF"
+parryToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+parryToggle.TextSize = 16
+parryToggle.Font = Enum.Font.GothamBold
+parryToggle.Visible = false
+parryToggle.Parent = mainFrame
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = parryToggle
+
+-- Toggle Logic
+local parryEnabled = false
+parryToggle.MouseButton1Click:Connect(function()
+	parryEnabled = not parryEnabled
+	if parryEnabled then
+		parryToggle.Text = "ON"
+		parryToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+	else
+		parryToggle.Text = "OFF"
+		parryToggle.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+	end
 end)
 
--- Also allow click to open menu
-minimizeButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = true
-    minimizeButton.Visible = false
-end)
-
--- AUTO PARRY BUTTON
-local autoParry = false
-local parryButton = Instance.new("TextButton", mainFrame)
-parryButton.Size = UDim2.new(0, 120, 0, 30)
-parryButton.Position = UDim2.new(0, 15, 0, 10)
-parryButton.Text = "Auto-Parry: OFF"
-parryButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-parryButton.TextColor3 = Color3.new(1,1,1)
-
+-- Show/hide toggle on Parry button click
 parryButton.MouseButton1Click:Connect(function()
-    autoParry = not autoParry
-    parryButton.Text = "Auto-Parry: " .. (autoParry and "ON" or "OFF")
-end)
-
--- Made By Tricitiy label
-local madeByLabel = Instance.new("TextLabel", mainFrame)
-madeByLabel.Size = UDim2.new(0, 120, 0, 20)
-madeByLabel.Position = UDim2.new(0, 15, 0, 50)
-madeByLabel.Text = "Made by Tricitiy"
-madeByLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-madeByLabel.TextSize = 12
-madeByLabel.TextXAlignment = Enum.TextXAlignment.Center
-madeByLabel.TextYAlignment = Enum.TextYAlignment.Center
-
--- AUTO PARRY LOGIC
-RunService.RenderStepped:Connect(function()
-    character = player.Character
-    if not character then return end
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-
-    if autoParry then
-        for _, ball in ipairs(workspace:GetDescendants()) do
-            if ball:IsA("Part") and ball.Name:lower():find("ball") then
-                local distance = (root.Position - ball.Position).Magnitude
-                if distance <= 20 then
-                    local VirtualInputManager = game:GetService("VirtualInputManager")
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-                    break
-                end
-            end
-        end
-    end
+	local state = not autoParryLabel.Visible
+	autoParryLabel.Visible = state
+	parryToggle.Visible = state
 end)
