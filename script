@@ -71,18 +71,22 @@ miscButtonCorner.Parent = miscButton
 -- Auto Parry Text (hidden by default)
 local autoParryText = Instance.new("TextLabel")
 autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0.1, 60, 0, 40)
+autoParryText.Position = UDim2.new(0.25, 20, 0, 50)
 autoParryText.BackgroundTransparency = 1
 autoParryText.Text = "Auto Parry"
 autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoParryText.TextSize = 13
+autoParryText.TextSize = 9
 autoParryText.Font = Enum.Font.GothamBold
 autoParryText.TextXAlignment = Enum.TextXAlignment.Center
 autoParryText.TextYAlignment = Enum.TextYAlignment.Center
 autoParryText.Visible = false
 autoParryText.Parent = mainFrame
 
--- Show the Auto Parry text when Misc button is clicked
+-- Toggle visibility when Misc button is clicked
 miscButton.MouseButton1Click:Connect(function()
-	autoParryText.Visible = true
+	if autoParryText.Visible then
+		autoParryText.Visible = false
+	else
+		autoParryText.Visible = true
+	end
 end)
