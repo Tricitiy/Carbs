@@ -1,18 +1,22 @@
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+-- Main GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FreyaHubUI"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 275)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.ZIndex = 1000
-mainFrame.Parent = ScreenGui
+mainFrame.Parent = screenGui
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 10)
-mainCorner.Parent = mainFrame
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
 
 -- Headbar
 local headBar = Instance.new("Frame")
@@ -23,7 +27,11 @@ headBar.BorderSizePixel = 0
 headBar.ZIndex = 1001
 headBar.Parent = mainFrame
 
--- Headbar Text "FreyaHub"
+local headCorner = Instance.new("UICorner")
+headCorner.CornerRadius = UDim.new(0, 10)
+headCorner.Parent = headBar
+
+-- Title Text
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0, 200, 1, 0)
 title.Position = UDim2.new(0.5, -100, 0, 0)
@@ -31,7 +39,7 @@ title.BackgroundTransparency = 1
 title.Text = "FreyaHub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextScaled = true
+title.TextSize = 18
 title.ZIndex = 1002
 title.Parent = headBar
 
@@ -39,11 +47,7 @@ title.Parent = headBar
 local sideBar = Instance.new("Frame")
 sideBar.Size = UDim2.new(0.33, 0, 1, -30)
 sideBar.Position = UDim2.new(0, 0, 0, 30)
-sideBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+sideBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 sideBar.BorderSizePixel = 0
 sideBar.ZIndex = 1001
 sideBar.Parent = mainFrame
-
-local sideCorner = Instance.new("UICorner")
-sideCorner.CornerRadius = UDim.new(0, 10)
-sideCorner.Parent = sideBar
