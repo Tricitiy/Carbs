@@ -27,6 +27,18 @@ local headCorner = Instance.new("UICorner")
 headCorner.CornerRadius = UDim.new(0, 12)
 headCorner.Parent = headBar
 
+-- Create the TextLabel for the middle of the HeadBar
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)  -- Size of the TextLabel, adjust as needed
+textLabel.Position = UDim2.new(0.5, 0, 0.5, -15)  -- Center the TextLabel
+textLabel.AnchorPoint = Vector2.new(0.5, 0.5)  -- Anchor at the center
+textLabel.BackgroundTransparency = 1  -- Remove the background
+textLabel.Text = "Your Text Here"  -- Set your desired text
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Set text color
+textLabel.TextSize = 20  -- Set text size
+textLabel.Font = Enum.Font.GothamBold  -- Set font type to GothamBold
+textLabel.Parent = headBar  -- Parent it to the headBar
+
 -- SideBar
 local sideBar = Instance.new("Frame")
 sideBar.Size = UDim2.new(1/3, 0, 1, -40)
