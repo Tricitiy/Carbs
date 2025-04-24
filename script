@@ -1,4 +1,3 @@
--- UI Setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
@@ -9,6 +8,7 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 275)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.2  -- Set transparency for the main frame
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
@@ -22,96 +22,55 @@ local headBar = Instance.new("Frame")
 headBar.Size = UDim2.new(1, 0, 0, 40)
 headBar.Position = UDim2.new(0, 0, 0, 0)
 headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+headBar.BackgroundTransparency = 0.2  -- Set transparency for the headBar
 headBar.Parent = mainFrame
 
 local headCorner = Instance.new("UICorner")
 headCorner.CornerRadius = UDim.new(0, 12)
 headCorner.Parent = headBar
 
--- Title Text in HeadBar
-local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(1, 0, 1, 0)
-titleText.Position = UDim2.new(0, 0, 0, 0)
-titleText.BackgroundTransparency = 1
-titleText.Text = "Inertia"
-titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleText.Font = Enum.Font.GothamBold
-titleText.TextSize = 18
-titleText.Parent = headBar
+-- Create the TextLabel for the middle of the HeadBar
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)  -- Size of the TextLabel, adjust as needed
+textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)  -- Center the TextLabel
+textLabel.AnchorPoint = Vector2.new(0.5, 0.5)  -- Anchor at the center
+textLabel.BackgroundTransparency = 1  -- Remove the background
+textLabel.Text = "Inertia"  -- Set your desired text
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Set text color
+textLabel.TextSize = 20  -- Set text size
+textLabel.Font = Enum.Font.GothamBold  -- Set font type to GothamBold
+textLabel.Parent = headBar  -- Parent it to the headBar
 
 -- SideBar
 local sideBar = Instance.new("Frame")
 sideBar.Size = UDim2.new(1/3, 0, 1, -40)
 sideBar.Position = UDim2.new(0, 0, 0, 40)
 sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sideBar.BackgroundTransparency = 0.2  -- Set transparency for the sideBar
 sideBar.Parent = mainFrame
 
 local sideCorner = Instance.new("UICorner")
 sideCorner.CornerRadius = UDim.new(0, 12)
 sideCorner.Parent = sideBar
 
--- Parry Button on Sidebar
-local parryButton = Instance.new("TextButton")
-parryButton.Size = UDim2.new(1, -20, 0, 30)
-parryButton.Position = UDim2.new(0, 10, 0, 10)
-parryButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-parryButton.Text = "Misc"
-parryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-parryButton.Font = Enum.Font.GothamBold
-parryButton.TextSize = 14
-parryButton.Parent = sideBar
+-- Misc Button
+local miscButton = Instance.new("TextButton")
+miscButton.Size = UDim2.new(0.8, 0, 0, 50)  -- Adjust the size as needed
+miscButton.Position = UDim2.new(0.1, 0, 0, 10)  -- Position inside the sidebar with some margin
+miscButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)  -- Set background color
+miscButton.Text = "Misc"  -- Text displayed on the button
+miscButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
+miscButton.TextSize = 18  -- Text size
+miscButton.Font = Enum.Font.GothamBold  -- Font type
+miscButton.Parent = sideBar  -- Parent it to the sidebar
 
-local parryBtnCorner = Instance.new("UICorner")
-parryBtnCorner.CornerRadius = UDim.new(0, 6)
-parryBtnCorner.Parent = parryButton
+-- Adding UICorner to the button to make it rounded
+local miscButtonCorner = Instance.new("UICorner")
+miscButtonCorner.CornerRadius = UDim.new(0, 12)  -- Rounded corners for the button
+miscButtonCorner.Parent = miscButton
 
--- Auto Parry Label and Toggle beside sidebar
-local autoParryContainer = Instance.new("Frame")
-autoParryContainer.Size = UDim2.new(0, 180, 0, 30)
-autoParryContainer.Position = UDim2.new(0, sideBar.Position.X.Offset + sideBar.Size.X.Offset + 30, 0, mainFrame.Position.Y.Offset + 50)
-autoParryContainer.BackgroundTransparency = 1
-autoParryContainer.Visible = false
-autoParryContainer.Parent = screenGui
-
-local autoParryLabel = Instance.new("TextLabel")
-autoParryLabel.Size = UDim2.new(0, 100, 1, 0)
-autoParryLabel.Position = UDim2.new(0, 0, 0, 0)
-autoParryLabel.BackgroundTransparency = 1
-autoParryLabel.Text = "Auto Parry"
-autoParryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoParryLabel.TextSize = 16
-autoParryLabel.Font = Enum.Font.Gotham
-autoParryLabel.Parent = autoParryContainer
-
-local parryToggle = Instance.new("TextButton")
-parryToggle.Size = UDim2.new(0, 60, 1, 0)
-parryToggle.Position = UDim2.new(0, 105, 0, 0)
-parryToggle.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-parryToggle.Text = "OFF"
-parryToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-parryToggle.TextSize = 16
-parryToggle.Font = Enum.Font.GothamBold
-parryToggle.Parent = autoParryContainer
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(1, 0)
-toggleCorner.Parent = parryToggle
-
--- Toggle Logic
-local parryEnabled = false
-parryToggle.MouseButton1Click:Connect(function()
-	parryEnabled = not parryEnabled
-	if parryEnabled then
-		parryToggle.Text = "ON"
-		parryToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-	else
-		parryToggle.Text = "OFF"
-		parryToggle.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-	end
-end)
-
--- Show/hide toggle container on Parry button click
-parryButton.MouseButton1Click:Connect(function()
-	local state = not autoParryContainer.Visible
-	autoParryContainer.Visible = state
+-- Button Click Event
+miscButton.MouseButton1Click:Connect(function()
+    -- Add your functionality here when the Misc button is clicked
+    print("Misc button clicked!")
 end)
