@@ -29,7 +29,7 @@ local headCorner = Instance.new("UICorner")
 headCorner.CornerRadius = UDim.new(0, 12)
 headCorner.Parent = headBar
 
--- Create the TextLabel for the middle of the HeadBar
+-- TextLabel for HeadBar
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 1, 0)
 textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -53,10 +53,10 @@ local sideCorner = Instance.new("UICorner")
 sideCorner.CornerRadius = UDim.new(0, 12)
 sideCorner.Parent = sideBar
 
--- Misc Button inside SideBar
+-- Misc Button
 local miscButton = Instance.new("TextButton")
 miscButton.Size = UDim2.new(0.8, 0, 0, 50)
-miscButton.Position = UDim2.new(0.1, 0, 0, 50)
+miscButton.Position = UDim2.new(0.1, 0, 0, 10)
 miscButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 miscButton.Text = "Misc"
 miscButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -68,22 +68,20 @@ local miscButtonCorner = Instance.new("UICorner")
 miscButtonCorner.CornerRadius = UDim.new(0, 12)
 miscButtonCorner.Parent = miscButton
 
--- Auto Parry Button (outside the sidebar, aligned horizontally)
-local autoParryButton = Instance.new("TextButton")
-autoParryButton.Size = UDim2.new(0, 130, 0, 50)
-autoParryButton.Position = UDim2.new(0, sideBar.AbsoluteSize.X + 10, 0, 50)
-autoParryButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-autoParryButton.Text = "Auto Parry"
-autoParryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoParryButton.TextSize = 18
-autoParryButton.Font = Enum.Font.GothamBold
-autoParryButton.Parent = mainFrame
+-- Auto Parry TextLabel (next to sidebar)
+local autoParryText = Instance.new("TextLabel")
+autoParryText.Size = UDim2.new(0, 130, 0, 50)
+autoParryText.Position = UDim2.new(0, sideBar.AbsoluteSize.X + 10, 0, 10)
+autoParryText.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+autoParryText.BackgroundTransparency = 0.2
+autoParryText.Text = "Auto Parry"
+autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoParryText.TextSize = 9
+autoParryText.Font = Enum.Font.GothamBold
+autoParryText.TextXAlignment = Enum.TextXAlignment.Center
+autoParryText.TextYAlignment = Enum.TextYAlignment.Center
+autoParryText.Parent = mainFrame
 
-local autoParryCorner = Instance.new("UICorner")
-autoParryCorner.CornerRadius = UDim.new(0, 12)
-autoParryCorner.Parent = autoParryButton
-
--- Optional: Button click event
-autoParryButton.MouseButton1Click:Connect(function()
-    print("Auto Parry button clicked!")
-end)
+local autoParryTextCorner = Instance.new("UICorner")
+autoParryTextCorner.CornerRadius = UDim.new(0, 12)
+autoParryTextCorner.Parent = autoParryText
