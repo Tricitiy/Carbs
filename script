@@ -1,37 +1,33 @@
--- Main GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FreyaHubUI"
+screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("CoreGui")
+screenGui.Parent = game:GetService("CoreGui")
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 275)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-mainFrame.BorderSizePixel = 0
-mainFrame.ZIndex = 1000
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Active = true
+mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = mainFrame
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
 
--- Headbar
+-- HeadBar
 local headBar = Instance.new("Frame")
-headBar.Size = UDim2.new(1, 0, 0, 30)
+headBar.Size = UDim2.new(1, 0, 0, 40)
 headBar.Position = UDim2.new(0, 0, 0, 0)
-headBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-headBar.BorderSizePixel = 0
-headBar.ZIndex = 1001
+headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 headBar.Parent = mainFrame
 
 local headCorner = Instance.new("UICorner")
-headCorner.CornerRadius = UDim.new(0, 10)
+headCorner.CornerRadius = UDim.new(0, 12)
 headCorner.Parent = headBar
 
--- Title Text
+-- Headbar Text "FreyaHub"
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0, 200, 1, 0)
 title.Position = UDim2.new(0.5, -100, 0, 0)
@@ -39,15 +35,17 @@ title.BackgroundTransparency = 1
 title.Text = "FreyaHub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
+title.TextSize = 18 -- manually set instead of TextScaled
 title.ZIndex = 1002
 title.Parent = headBar
 
--- Sidebar
+-- SideBar
 local sideBar = Instance.new("Frame")
-sideBar.Size = UDim2.new(0.33, 0, 1, -30)
-sideBar.Position = UDim2.new(0, 0, 0, 30)
-sideBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-sideBar.BorderSizePixel = 0
-sideBar.ZIndex = 1001
+sideBar.Size = UDim2.new(1/3, 0, 1, -40)
+sideBar.Position = UDim2.new(0, 0, 0, 40)
+sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 sideBar.Parent = mainFrame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 12)
+sideCorner.Parent = sideBar
