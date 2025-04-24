@@ -26,11 +26,12 @@ minimizeButton.TextColor3 = Color3.new(1,1,1)
 minimizeButton.Text = "Open Menu"
 minimizeButton.Visible = false
 
-local closeButton = Instance.new("TextButton", gui)
+-- Close Button
+local closeButton = Instance.new("TextButton", mainFrame)
 closeButton.Size = UDim2.new(0, 100, 0, 30)
-closeButton.Position = UDim2.new(0.8, 0, 0, 0)
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-closeButton.TextColor3 = Color3.new(1,1,1)
+closeButton.Position = UDim2.new(0.75, 0, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
 closeButton.Text = "Close"
 
 -- Open/Close GUI
@@ -41,8 +42,16 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
+-- Close Button functionality
 closeButton.MouseButton1Click:Connect(function()
-    gui:Destroy() -- Close the GUI completely
+    mainFrame.Visible = false
+    minimizeButton.Visible = true
+end)
+
+-- Minimize Button functionality
+minimizeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    minimizeButton.Visible = false
 end)
 
 -- AUTO PARRY BUTTON
@@ -59,82 +68,14 @@ parryButton.MouseButton1Click:Connect(function()
     parryButton.Text = "Auto-Parry: " .. (autoParry and "ON" or "OFF")
 end)
 
--- WALKSPEED BOX
-local speedBox = Instance.new("TextBox", mainFrame)
-speedBox.Size = UDim2.new(0, 200, 0, 40)
-speedBox.Position = UDim2.new(0, 25, 0, 90)
-speedBox.PlaceholderText = "WalkSpeed (Default 16)"
-speedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-speedBox.TextColor3 = Color3.new(1,1,1)
-
-speedBox.FocusLost:Connect(function()
-    local num = tonumber(speedBox.Text)
-    if num then
-        humanoid.WalkSpeed = num
-    end
-end)
-
--- FLY SYSTEM
-local flying = false
-local flySpeed = 50
-local flyButton = Instance.new("TextButton", mainFrame)
-flyButton.Size = UDim2.new(0, 200, 0, 50)
-flyButton.Position = UDim2.new(0, 25, 0, 150)
-flyButton.Text = "Fly: OFF"
-flyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-flyButton.TextColor3 = Color3.new(1,1,1)
-
-flyButton.MouseButton1Click:Connect(function()
-    flying = not flying
-    flyButton.Text = "Fly: " .. (flying and "ON" or "OFF")
-end)
-
-local flySpeedBox = Instance.new("TextBox", mainFrame)
-flySpeedBox.Size = UDim2.new(0, 200, 0, 40)
-flySpeedBox.Position = UDim2.new(0, 25, 0, 220)
-flySpeedBox.PlaceholderText = "Fly Speed (Default 50)"
-flySpeedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-flySpeedBox.TextColor3 = Color3.new(1,1,1)
-
-flySpeedBox.FocusLost:Connect(function()
-    local num = tonumber(flySpeedBox.Text)
-    if num then
-        flySpeed = num
-    end
-end)
-
--- ACTUAL FLY AND AUTO PARRY
+-- ACTUAL AUTO PARRY
 RunService.RenderStepped:Connect(function()
     character = player.Character
     if not character then return end
     local root = character:FindFirstChild("HumanoidRootPart")
     if not root then return end
 
-    -- Fly logic
-    if flying then
-        local moveVec = Vector3.new()
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-            moveVec = moveVec + workspace.CurrentCamera.CFrame.LookVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-            moveVec = moveVec - workspace.CurrentCamera.CFrame.LookVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-            moveVec = moveVec - workspace.CurrentCamera.CFrame.RightVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-            moveVec = moveVec + workspace.CurrentCamera.CFrame.RightVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            moveVec = moveVec + workspace.CurrentCamera.CFrame.UpVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-            moveVec = moveVec - workspace.CurrentCamera.CFrame.UpVector
-        end
-        root.Velocity = moveVec.Unit * flySpeed
-    end
-
-    -- Auto Parry logic (distance set to 20)
+    -- Auto Parry logic
     if autoParry then
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
@@ -151,3 +92,13 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
+
+-- "Made By Tricitiy" Text at the bottom
+local footerText = Instance.new("TextLabel", mainFrame)
+footerText.Size = UDim2.new(0, 250, 0, 30)
+footerText.Position = UDim2.new(0, 0, 1, -30)
+footerText.Text = "Made By Tricitiy"
+footerText.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+footerText.TextColor3 = Color3.new(1, 1, 1)
+footerText.TextSize = 14
+footerText.TextAlign = Enum.TextAlign.Center
