@@ -1,88 +1,90 @@
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "CustomUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game:GetService("CoreGui")
+-- SERVICES
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
--- Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 275)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BackgroundTransparency = 0.2
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 12)
-mainCorner.Parent = mainFrame
+-- UI SETUP
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.ResetOnSpawn = false
 
--- HeadBar
-local headBar = Instance.new("Frame")
-headBar.Size = UDim2.new(1, 0, 0, 40)
-headBar.Position = UDim2.new(0, 0, 0, 0)
-headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-headBar.BackgroundTransparency = 0.2
-headBar.Parent = mainFrame
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(0, 150, 0, 120)  -- Smaller size
+mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainFrame.BorderSizePixel = 2
+mainFrame.Visible = true
 
-local headCorner = Instance.new("UICorner")
-headCorner.CornerRadius = UDim.new(0, 12)
-headCorner.Parent = headBar
+local minimizeButton = Instance.new("TextButton", gui)
+minimizeButton.Size = UDim2.new(0, 100, 0, 30)
+minimizeButton.Position = UDim2.new(0.05, 0, 0.28, 0)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+minimizeButton.TextColor3 = Color3.new(1,1,1)
+minimizeButton.Text = "Open Menu"
+minimizeButton.Visible = false
 
--- TextLabel for HeadBar
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(1, 0, 1, 0)
-textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
-textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-textLabel.BackgroundTransparency = 1
-textLabel.Text = "Inertia"
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-textLabel.TextSize = 20
-textLabel.Font = Enum.Font.GothamBold
-textLabel.Parent = headBar
+-- Open/Close GUI with RightShift
+UserInputService.InputBegan:Connect(function(input, processed)
+    if input.KeyCode == Enum.KeyCode.RightShift and not processed then
+        local currentlyVisible = mainFrame.Visible
+        mainFrame.Visible = not currentlyVisible
+        minimizeButton.Visible = currentlyVisible
+    end
+end)
 
--- SideBar
-local sideBar = Instance.new("Frame")
-sideBar.Size = UDim2.new(1/3, 0, 1, -40)
-sideBar.Position = UDim2.new(0, 0, 0, 40)
-sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-sideBar.BackgroundTransparency = 0.2
-sideBar.Parent = mainFrame
+-- Also allow click to open menu
+minimizeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    minimizeButton.Visible = false
+end)
 
-local sideCorner = Instance.new("UICorner")
-sideCorner.CornerRadius = UDim.new(0, 12)
-sideCorner.Parent = sideBar
+-- AUTO PARRY BUTTON
+local autoParry = false
+local parryButton = Instance.new("TextButton", mainFrame)
+parryButton.Size = UDim2.new(0, 120, 0, 30)
+parryButton.Position = UDim2.new(0, 15, 0, 10)
+parryButton.Text = "Auto-Parry: OFF"
+parryButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+parryButton.TextColor3 = Color3.new(1,1,1)
 
--- Misc Button
-local miscButton = Instance.new("TextButton")
-miscButton.Size = UDim2.new(0.8, 0, 0, 50)
-miscButton.Position = UDim2.new(0.1, 0, 0, 10)
-miscButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-miscButton.Text = "Misc"
-miscButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-miscButton.TextSize = 18
-miscButton.Font = Enum.Font.GothamBold
-miscButton.Parent = sideBar
+parryButton.MouseButton1Click:Connect(function()
+    autoParry = not autoParry
+    parryButton.Text = "Auto-Parry: " .. (autoParry and "ON" or "OFF")
+end)
 
-local miscButtonCorner = Instance.new("UICorner")
-miscButtonCorner.CornerRadius = UDim.new(0, 12)
-miscButtonCorner.Parent = miscButton
+-- Made By Tricitiy label
+local madeByLabel = Instance.new("TextLabel", mainFrame)
+madeByLabel.Size = UDim2.new(0, 120, 0, 20)
+madeByLabel.Position = UDim2.new(0, 15, 0, 50)
+madeByLabel.Text = "Made by Tricitiy"
+madeByLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+madeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+madeByLabel.TextSize = 12
+madeByLabel.TextXAlignment = Enum.TextXAlignment.Center
+madeByLabel.TextYAlignment = Enum.TextYAlignment.Center
 
--- Auto Parry Text (hidden by default)
-local autoParryText = Instance.new("TextLabel")
-autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0.1, 40, 0, 25)
-autoParryText.BackgroundTransparency = 1
-autoParryText.Text = "Auto Parry"
-autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoParryText.TextSize = 13
-autoParryText.Font = Enum.Font.GothamBold
-autoParryText.TextXAlignment = Enum.TextXAlignment.Center
-autoParryText.TextYAlignment = Enum.TextYAlignment.Center
-autoParryText.Visible = false
-autoParryText.Parent = mainFrame
+-- AUTO PARRY LOGIC
+RunService.RenderStepped:Connect(function()
+    character = player.Character
+    if not character then return end
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
 
--- Show the Auto Parry text when Misc button is clicked
-miscButton.MouseButton1Click:Connect(function()
-	autoParryText.Visible = true
+    if autoParry then
+        for _, ball in ipairs(workspace:GetDescendants()) do
+            if ball:IsA("Part") and ball.Name:lower():find("ball") then
+                local distance = (root.Position - ball.Position).Magnitude
+                if distance <= 20 then
+                    local VirtualInputManager = game:GetService("VirtualInputManager")
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+                    task.wait(0.05)
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                    break
+                end
+            end
+        end
+    end
 end)
