@@ -26,12 +26,20 @@ minimizeButton.TextColor3 = Color3.new(1,1,1)
 minimizeButton.Text = "Open Menu"
 minimizeButton.Visible = false
 
--- Open/Close GUI
+-- Open/Close GUI using RightShift or Minimize button
 UserInputService.InputBegan:Connect(function(input, processed)
     if input.KeyCode == Enum.KeyCode.RightShift and not processed then
+        -- Toggle main menu visibility and minimize button visibility
         mainFrame.Visible = not mainFrame.Visible
         minimizeButton.Visible = not mainFrame.Visible
     end
+end)
+
+-- Minimize Button Logic (to open/close menu)
+minimizeButton.MouseButton1Click:Connect(function()
+    -- Toggle main menu visibility and minimize button visibility
+    mainFrame.Visible = not mainFrame.Visible
+    minimizeButton.Visible = not mainFrame.Visible
 end)
 
 -- AUTO PARRY BUTTON
@@ -92,6 +100,7 @@ RunService.RenderStepped:Connect(function()
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
 
                     humanoid.PlatformStand = false  -- Re-enable movement controls
+
                     break
                 end
             end
