@@ -1,54 +1,34 @@
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local HeadBar = Instance.new("Frame")
+local SideBar = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
 
--- Create the main UI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.CoreGui
+ScreenGui.Name = "CustomUI"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 500, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainFrame.BorderRadius = UDim.new(0, 20)
-mainFrame.ZIndex = 99999  -- Set to a very high ZIndex to ensure it's on top of everything
-mainFrame.Parent = screenGui
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.25, 0, 0.25, 0)
+MainFrame.Size = UDim2.new(0, 600, 0, 400)
+MainFrame.ZIndex = 10
+MainFrame.Active = true
+MainFrame.Draggable = true
 
--- Make the frame movable
-local dragging = false
-local dragInput
-local dragStart
-local startPos
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
 
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-    end
-end)
+HeadBar.Name = "HeadBar"
+HeadBar.Parent = MainFrame
+HeadBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+HeadBar.Size = UDim2.new(1, 0, 0, 40)
+HeadBar.ZIndex = 11
 
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
--- Freya text at the top left
-local freyaText = Instance.new("TextLabel")
-freyaText.Text = "Freya"
-freyaText.Font = Enum.Font.GothamBold
-freyaText.TextSize = 30
-freyaText.TextColor3 = Color3.fromRGB(255, 105, 180) -- Pink color
-freyaText.BackgroundTransparency = 1
-freyaText.Position = UDim2.new(0, 10, 0, 10)
-freyaText.Size = UDim2.new(0, 200, 0, 50)
-freyaText.ZIndex = 99999  -- Ensure the text is on top as well
-freyaText.Parent = mainFrame
+SideBar.Name = "SideBar"
+SideBar.Parent = MainFrame
+SideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SideBar.Position = UDim2.new(0, 0, 0, 40) -- starts just below the HeadBar
+SideBar.Size = UDim2.new(1/3, 0, 1, -40) -- full height minus HeadBar
+SideBar.ZIndex = 11
+q
