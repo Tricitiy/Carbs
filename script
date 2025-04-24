@@ -71,7 +71,7 @@ miscButtonCorner.Parent = miscButton
 -- Auto Parry Text (hidden by default)
 local autoParryText = Instance.new("TextLabel")
 autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0.20, 20, 0, 50)
+autoParryText.Position = UDim2.new(0.22, 20, 0, 50)
 autoParryText.BackgroundTransparency = 1
 autoParryText.Text = "Auto Parry"
 autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -85,7 +85,7 @@ autoParryText.Parent = mainFrame
 -- Mini Slider (hidden by default)
 local sliderFrame = Instance.new("Frame")
 sliderFrame.Size = UDim2.new(0, 40, 0, 20)
-sliderFrame.Position = UDim2.new(0.20, 30, 0, 50)
+sliderFrame.Position = UDim2.new(0.90, 0, 0, 55)
 sliderFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 sliderFrame.BackgroundTransparency = 0.2
 sliderFrame.Visible = false
