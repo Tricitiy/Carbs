@@ -97,8 +97,8 @@ sliderButtonCorner.Parent = sliderButton
 
 -- Knob
 local knob = Instance.new("Frame")
-knob.Size = UDim2.new(0, 20, 0, 30)
-knob.Position = UDim2.new(0, 1, 0, 1)
+knob.Size = UDim2.new(0, 20, 0, 20)
+knob.Position = UDim2.new(0, 1, 0 , 1)
 knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 knob.BorderSizePixel = 0
 knob.Parent = sliderButton
