@@ -55,7 +55,7 @@ local parryButton = Instance.new("TextButton")
 parryButton.Size = UDim2.new(1, -20, 0, 30)
 parryButton.Position = UDim2.new(0, 10, 0, 10)
 parryButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-parryButton.Text = "Parry"
+parryButton.Text = "Misc"
 parryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 parryButton.Font = Enum.Font.GothamBold
 parryButton.TextSize = 14
@@ -65,29 +65,33 @@ local parryBtnCorner = Instance.new("UICorner")
 parryBtnCorner.CornerRadius = UDim.new(0, 6)
 parryBtnCorner.Parent = parryButton
 
--- Auto Parry Label
+-- Auto Parry Label and Toggle beside sidebar
+local autoParryContainer = Instance.new("Frame")
+autoParryContainer.Size = UDim2.new(0, 180, 0, 30)
+autoParryContainer.Position = UDim2.new(0, sideBar.Position.X.Offset + sideBar.Size.X.Offset + 30, 0, mainFrame.Position.Y.Offset + 50)
+autoParryContainer.BackgroundTransparency = 1
+autoParryContainer.Visible = false
+autoParryContainer.Parent = screenGui
+
 local autoParryLabel = Instance.new("TextLabel")
-autoParryLabel.Size = UDim2.new(0, 100, 0, 20)
-autoParryLabel.Position = UDim2.new(0, 10, 0, 50) -- Adjusted position
+autoParryLabel.Size = UDim2.new(0, 100, 1, 0)
+autoParryLabel.Position = UDim2.new(0, 0, 0, 0)
 autoParryLabel.BackgroundTransparency = 1
 autoParryLabel.Text = "Auto Parry"
 autoParryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoParryLabel.TextSize = 16
 autoParryLabel.Font = Enum.Font.Gotham
-autoParryLabel.Visible = false
-autoParryLabel.Parent = mainFrame
+autoParryLabel.Parent = autoParryContainer
 
--- Toggle Button
 local parryToggle = Instance.new("TextButton")
-parryToggle.Size = UDim2.new(0, 100, 0, 30)
-parryToggle.Position = UDim2.new(0.5, -50, 0.5, -10)
+parryToggle.Size = UDim2.new(0, 60, 1, 0)
+parryToggle.Position = UDim2.new(0, 105, 0, 0)
 parryToggle.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
 parryToggle.Text = "OFF"
 parryToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 parryToggle.TextSize = 16
 parryToggle.Font = Enum.Font.GothamBold
-parryToggle.Visible = false
-parryToggle.Parent = mainFrame
+parryToggle.Parent = autoParryContainer
 
 local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(1, 0)
@@ -106,9 +110,8 @@ parryToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Show/hide toggle on Parry button click
+-- Show/hide toggle container on Parry button click
 parryButton.MouseButton1Click:Connect(function()
-	local state = not autoParryLabel.Visible
-	autoParryLabel.Visible = state
-	parryToggle.Visible = state
+	local state = not autoParryContainer.Visible
+	autoParryContainer.Visible = state
 end)
