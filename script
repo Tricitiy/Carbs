@@ -82,44 +82,42 @@ autoParryText.TextYAlignment = Enum.TextYAlignment.Center
 autoParryText.Visible = false
 autoParryText.Parent = mainFrame
 
--- Mini Slider (hidden by default)
-local sliderFrame = Instance.new("Frame")
-sliderFrame.Size = UDim2.new(0, 40, 0, 20)
-sliderFrame.Position = UDim2.new(0.90, 0, 0, 55)
-sliderFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-sliderFrame.BackgroundTransparency = 0.2
-sliderFrame.Visible = false
-sliderFrame.Parent = mainFrame
+-- Mini Slider Button (hidden by default)
+local sliderButton = Instance.new("TextButton")
+sliderButton.Size = UDim2.new(0, 40, 0, 20)
+sliderButton.Position = UDim2.new(0.90 ,0, 0, 55)
+sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+sliderButton.BackgroundTransparency = 0.2
+sliderButton.Visible = false
+sliderButton.Text = ""
+sliderButton.AutoButtonColor = false
+sliderButton.Parent = mainFrame
 
 local sliderCorner = Instance.new("UICorner")
 sliderCorner.CornerRadius = UDim.new(0, 10)
-sliderCorner.Parent = sliderFrame
+sliderCorner.Parent = sliderButton
 
 local knob = Instance.new("Frame")
 knob.Size = UDim2.new(0, 18, 0, 18)
 knob.Position = UDim2.new(0, 1, 0, 1)
 knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 knob.BackgroundTransparency = 0
-knob.Parent = sliderFrame
+knob.Parent = sliderButton
 
 local knobCorner = Instance.new("UICorner")
 knobCorner.CornerRadius = UDim.new(1, 0)
 knobCorner.Parent = knob
 
--- Toggle slider behavior
-local sliderOn = false
-sliderFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		sliderOn = not sliderOn
-		if sliderOn then
-			sliderFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-			knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
-			knob.BackgroundTransparency = 0
-		else
-			sliderFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-			knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
-			knob.BackgroundTransparency = 0.2
-		end
+-- Toggle knob movement
+local sliderToggled = false
+sliderButton.MouseButton1Click:Connect(function()
+	sliderToggled = not sliderToggled
+	if sliderToggled then
+		knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
+		knob.BackgroundTransparency = 0
+	else
+		knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
+		knob.BackgroundTransparency = 0.2
 	end
 end)
 
@@ -128,5 +126,5 @@ local toggleVisible = false
 miscButton.MouseButton1Click:Connect(function()
 	toggleVisible = not toggleVisible
 	autoParryText.Visible = toggleVisible
-	sliderFrame.Visible = toggleVisible
+	sliderButton.Visible = toggleVisible
 end)
