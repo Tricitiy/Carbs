@@ -85,7 +85,7 @@ autoParryText.Parent = mainFrame
 -- Mini Slider Button (hidden by default)
 local sliderButton = Instance.new("TextButton")
 sliderButton.Size = UDim2.new(0, 40, 0, 20)
-sliderButton.Position = UDim2.new(0.90 ,0, 0, 55)
+sliderButton.Position = UDim2.new(0.90 ,0, 0, 60)
 sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 sliderButton.BackgroundTransparency = 0.2
 sliderButton.Visible = false
