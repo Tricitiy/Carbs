@@ -1,20 +1,20 @@
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = game:GetService("CoreGui") -- works better for executors
+screenGui.Parent = game:GetService("CoreGui")
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 600, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+mainFrame.Size = UDim2.new(0, 450, 0, 275)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 12)
-corner.Parent = mainFrame
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
 
 -- HeadBar
 local headBar = Instance.new("Frame")
@@ -23,9 +23,17 @@ headBar.Position = UDim2.new(0, 0, 0, 0)
 headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 headBar.Parent = mainFrame
 
+local headCorner = Instance.new("UICorner")
+headCorner.CornerRadius = UDim.new(0, 12)
+headCorner.Parent = headBar
+
 -- SideBar
 local sideBar = Instance.new("Frame")
 sideBar.Size = UDim2.new(1/3, 0, 1, -40)
 sideBar.Position = UDim2.new(0, 0, 0, 40)
 sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 sideBar.Parent = mainFrame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 12)
+sideCorner.Parent = sideBar
