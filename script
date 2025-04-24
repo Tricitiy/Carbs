@@ -71,22 +71,62 @@ miscButtonCorner.Parent = miscButton
 -- Auto Parry Text (hidden by default)
 local autoParryText = Instance.new("TextLabel")
 autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0.25, 20, 0, 50)
+autoParryText.Position = UDim2.new(0.20, 20, 0, 50)
 autoParryText.BackgroundTransparency = 1
 autoParryText.Text = "Auto Parry"
 autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoParryText.TextSize = 9
+autoParryText.TextSize = 13
 autoParryText.Font = Enum.Font.GothamBold
 autoParryText.TextXAlignment = Enum.TextXAlignment.Center
 autoParryText.TextYAlignment = Enum.TextYAlignment.Center
 autoParryText.Visible = false
 autoParryText.Parent = mainFrame
 
--- Toggle visibility when Misc button is clicked
-miscButton.MouseButton1Click:Connect(function()
-	if autoParryText.Visible then
-		autoParryText.Visible = false
-	else
-		autoParryText.Visible = true
+-- Mini Slider (hidden by default)
+local sliderFrame = Instance.new("Frame")
+sliderFrame.Size = UDim2.new(0, 40, 0, 20)
+sliderFrame.Position = UDim2.new(0.20, 30, 0, 50)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+sliderFrame.BackgroundTransparency = 0.2
+sliderFrame.Visible = false
+sliderFrame.Parent = mainFrame
+
+local sliderCorner = Instance.new("UICorner")
+sliderCorner.CornerRadius = UDim.new(0, 10)
+sliderCorner.Parent = sliderFrame
+
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 18, 0, 18)
+knob.Position = UDim2.new(0, 1, 0, 1)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BackgroundTransparency = 0
+knob.Parent = sliderFrame
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = knob
+
+-- Toggle slider behavior
+local sliderOn = false
+sliderFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		sliderOn = not sliderOn
+		if sliderOn then
+			sliderFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+			knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
+			knob.BackgroundTransparency = 0
+		else
+			sliderFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+			knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
+			knob.BackgroundTransparency = 0.2
+		end
 	end
+end)
+
+-- Toggle visibility of Auto Parry text and slider
+local toggleVisible = false
+miscButton.MouseButton1Click:Connect(function()
+	toggleVisible = not toggleVisible
+	autoParryText.Visible = toggleVisible
+	sliderFrame.Visible = toggleVisible
 end)
