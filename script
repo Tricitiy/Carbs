@@ -1,54 +1,62 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+
 local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local root = character:WaitForChild("HumanoidRootPart")
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BallColorUI"
-screenGui.ResetOnSpawn = false
+screenGui.Name = "BallTargetGUI"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Draggable Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 200, 0, 60)
-mainFrame.Position = UDim2.new(0.5, -100, 0.1, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 50)
+frame.Position = UDim2.new(0.5, -100, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 8)
-corner.Parent = mainFrame
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 1, 0)
+label.BackgroundTransparency = 1
+label.TextColor3 = Color3.new(1, 1, 1)
+label.TextScaled = true
+label.Text = "Checking..."
+label.Font = Enum.Font.SourceSans
+label.Parent = frame
 
--- Label
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 1, 0)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Ball is not red"
-statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-statusLabel.Font = Enum.Font.GothamBold
-statusLabel.TextSize = 16
-statusLabel.Parent = mainFrame
-
--- Red color check function
-local function isSimilarToRed(color)
-	local r, g, b = color.R, color.G, color.B
-	return r >= 0.7 and g < 0.15 and b < 0.15
+-- Function to check if the ball is targeting the player
+local function isBallTargetingPlayer(ball)
+	if not root or not ball.Velocity then return false end
+	local directionToPlayer = (root.Position - ball.Position).Unit
+	local ballDirection = ball.Velocity.Magnitude > 0 and ball.Velocity.Unit or Vector3.zero
+	local dot = directionToPlayer:Dot(ballDirection)
+	return dot > 0.95
 end
 
--- Update label every frame
+-- Main loop
 RunService.RenderStepped:Connect(function()
-	local redDetected = false
+	character = player.Character
+	root = character and character:FindFirstChild("HumanoidRootPart")
+	if not root then return end
 
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("BasePart") and obj.Name:lower():find("ball") then
-			if isSimilarToRed(obj.Color) then
-				redDetected = true
+	local isTargeting = false
+
+	for _, ball in ipairs(workspace:GetDescendants()) do
+		if ball:IsA("BasePart") and ball.Name:lower():find("ball") then
+			if isBallTargetingPlayer(ball) then
+				isTargeting = true
 				break
 			end
 		end
 	end
 
-	statusLabel.Text = redDetected and "The ball is red" or "Ball is not red"
+	if isTargeting then
+		label.Text = "The ball is targeting you"
+	else
+		label.Text = "The ball is not targeting you"
+	end
 end)
