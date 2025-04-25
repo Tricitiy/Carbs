@@ -6,7 +6,7 @@ local player = Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "BallColorBox"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("CoreGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Main draggable frame
 local frame = Instance.new("Frame")
