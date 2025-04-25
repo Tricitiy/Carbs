@@ -34,7 +34,7 @@ local function isBallTargetingPlayer(ball)
 	local directionToPlayer = (root.Position - ball.Position).Unit
 	local ballDirection = ball.Velocity.Magnitude > 0 and ball.Velocity.Unit or Vector3.zero
 	local dot = directionToPlayer:Dot(ballDirection)
-	return dot > 0.95
+	return dot > 0.8
 end
 
 -- Main loop
