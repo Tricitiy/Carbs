@@ -6,7 +6,7 @@ local player = Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "BallColorNotifier"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Parent = player:WaitForChild("CoreGui")
 
 local noticeLabel = Instance.new("TextLabel")
 noticeLabel.Size = UDim2.new(0, 200, 0, 50)
