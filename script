@@ -4,58 +4,51 @@ local player = Players.LocalPlayer
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BallColorBox"
-screenGui.IgnoreGuiInset = true
+screenGui.Name = "BallColorUI"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui") -- Updated line
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Draggable Frame
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 50)
-frame.Position = UDim2.new(0.3, 0, 0.2, 0)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.BackgroundTransparency = 0.2
-frame.Active = true
-frame.Draggable = true
-frame.Parent = screenGui
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 200, 0, 60)
+mainFrame.Position = UDim2.new(0.5, -100, 0.1, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = frame
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = mainFrame
 
--- Text Label
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1, 0, 1, 0)
-label.BackgroundTransparency = 1
-label.Text = "Ball is not red"
-label.TextColor3 = Color3.fromRGB(255, 255, 255)
-label.TextSize = 18
-label.Font = Enum.Font.GothamBold
-label.TextScaled = true
-label.Parent = frame
+-- Label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 1, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Ball is not red"
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.Font = Enum.Font.GothamBold
+statusLabel.TextSize = 16
+statusLabel.Parent = mainFrame
 
--- Function to check if a color is close to red
+-- Red color check function
 local function isSimilarToRed(color)
 	local r, g, b = color.R, color.G, color.B
-	return r > 0.6 and g < 0.3 and b < 0.3
+	return r >= 0.7 and g < 0.15 and b < 0.15
 end
 
--- Update every frame
+-- Update label every frame
 RunService.RenderStepped:Connect(function()
-	local foundRed = false
+	local redDetected = false
 
-	for _, obj in pairs(workspace:GetDescendants()) do
+	for _, obj in ipairs(workspace:GetDescendants()) do
 		if obj:IsA("BasePart") and obj.Name:lower():find("ball") then
 			if isSimilarToRed(obj.Color) then
-				foundRed = true
+				redDetected = true
 				break
 			end
 		end
 	end
 
-	if foundRed then
-		label.Text = "The ball is red"
-	else
-		label.Text = "Ball is not red"
-	end
+	statusLabel.Text = redDetected and "The ball is red" or "Ball is not red"
 end)
