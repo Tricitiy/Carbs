@@ -1,62 +1,61 @@
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+-- Get the ball's script
+local ballScript = game.Workspace.Ball:WaitForChild("BallScript")
 
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local root = character:WaitForChild("HumanoidRootPart")
+-- Get the player's character
+local character = game.Players.LocalPlayer.Character
 
--- GUI Setup
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BallTargetGUI"
-screenGui.Parent = player:WaitForChild("PlayerGui")
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 50)
-frame.Position = UDim2.new(0.5, -100, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Parent = screenGui
-
+-- Get the GUI label
 local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1, 0, 1, 0)
+label.Name = "BallTargetLabel"
+label.Parent = character.HumanoidRootPart
 label.BackgroundTransparency = 1
+label.Font = Enum.Font.SourceSansBold
+label.Text = "Ball is not targeting you"
 label.TextColor3 = Color3.new(1, 1, 1)
-label.TextScaled = true
-label.Text = "Checking..."
-label.Font = Enum.Font.SourceSans
-label.Parent = frame
+label.Position = UDim2.new(0, 0, 0, -50)
 
 -- Function to check if the ball is targeting the player
-local function isBallTargetingPlayer(ball)
-	if not root or not ball.Velocity then return false end
-	local directionToPlayer = (root.Position - ball.Position).Unit
-	local ballDirection = ball.Velocity.Magnitude > 0 and ball.Velocity.Unit or Vector3.zero
-	local dot = directionToPlayer:Dot(ballDirection)
-	return dot > 0.5
+local function isBallTargetingPlayer()
+    -- Get the ball's position and direction
+    local ballPosition = ballScript.Ball.Position
+    local ballDirection = ballScript.Ball.CFrame.LookVector
+
+    -- Get the player's position and direction
+    local playerPosition = character.HumanoidRootPart.Position
+    local playerDirection = character.HumanoidRootPart.CFrame.LookVector
+
+    -- Calculate the vector from the ball to the player
+    local vectorToPlayer = (playerPosition - ballPosition).Unit
+
+    -- Check if the ball is pointing towards the player
+    if math.abs(vectorToPlayer:Dot(ballDirection)) > 0.8 then
+        return true
+    else
+        return false
+    end
 end
 
--- Main loop
-RunService.RenderStepped:Connect(function()
-	character = player.Character
-	root = character and character:FindFirstChild("HumanoidRootPart")
-	if not root then return end
+-- Function to update the label text
+local function updateLabelText()
+    if isBallTargetingPlayer() then
+        label.Text = "Ball is targeting you!"
+    else
+        label.Text = "Ball is not targeting you"
+    end
+end
 
-	local isTargeting = false
+-- Update the label text initially
+updateLabelText()
 
-	for _, ball in ipairs(workspace:GetDescendants()) do
-		if ball:IsA("BasePart") and ball.Name:lower():find("ball") then
-			if isBallTargetingPlayer(ball) then
-				isTargeting = true
-				break
-			end
-		end
-	end
+-- Connect the function to the ball's Touched event
+game.Workspace.Ball.Touched:Connect(function(hit)
+    if hit == character.HumanoidRootPart then
+        -- If the ball touches the player, check if it's targeting the player
+        updateLabelText()
+    end
+end)
 
-	if isTargeting then
-		label.Text = "The ball is targeting you"
-	else
-		label.Text = "The ball is not targeting you"
-	end
+-- Connect the function to the ball's PositionChanged event
+ballScript.Ball.PositionChanged:Connect(function()
+    updateLabelText()
 end)
