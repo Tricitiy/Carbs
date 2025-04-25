@@ -5,10 +5,11 @@ local player = Players.LocalPlayer
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "BallColorBox"
+screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Parent = player:WaitForChild("PlayerGui") -- Updated line
 
--- Main draggable frame
+-- Draggable Frame
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 200, 0, 50)
 frame.Position = UDim2.new(0.3, 0, 0.2, 0)
@@ -22,38 +23,39 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = frame
 
--- Label inside the frame
+-- Text Label
 local label = Instance.new("TextLabel")
 label.Size = UDim2.new(1, 0, 1, 0)
-label.Position = UDim2.new(0, 0, 0, 0)
 label.BackgroundTransparency = 1
 label.Text = "Ball is not red"
 label.TextColor3 = Color3.fromRGB(255, 255, 255)
 label.TextSize = 18
 label.Font = Enum.Font.GothamBold
+label.TextScaled = true
 label.Parent = frame
 
--- Function to check if a color is a shade of red
+-- Function to check if a color is close to red
 local function isSimilarToRed(color)
-    return color.R > 0.5 and color.G < 0.3 and color.B < 0.3
+	local r, g, b = color.R, color.G, color.B
+	return r > 0.6 and g < 0.3 and b < 0.3
 end
 
--- Detection loop
+-- Update every frame
 RunService.RenderStepped:Connect(function()
-    local redDetected = false
+	local foundRed = false
 
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Part") and obj.Name:lower():find("ball") then
-            if isSimilarToRed(obj.Color) then
-                redDetected = true
-                break
-            end
-        end
-    end
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj.Name:lower():find("ball") then
+			if isSimilarToRed(obj.Color) then
+				foundRed = true
+				break
+			end
+		end
+	end
 
-    if redDetected then
-        label.Text = "The ball is red"
-    else
-        label.Text = "Ball is not red"
-    end
+	if foundRed then
+		label.Text = "The ball is red"
+	else
+		label.Text = "Ball is not red"
+	end
 end)
