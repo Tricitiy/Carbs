@@ -2,36 +2,58 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
--- Create ScreenGui and TextLabel
+-- GUI Setup
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BallColorNotifier"
+screenGui.Name = "BallColorBox"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("CoreGui")
 
-local noticeLabel = Instance.new("TextLabel")
-noticeLabel.Size = UDim2.new(0, 200, 0, 50)
-noticeLabel.Position = UDim2.new(0.5, -100, 0.1, 0)
-noticeLabel.BackgroundTransparency = 0.5
-noticeLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-noticeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-noticeLabel.TextScaled = true
-noticeLabel.Font = Enum.Font.GothamBold
-noticeLabel.Text = ""
-noticeLabel.Visible = false
-noticeLabel.Parent = screenGui
+-- Main draggable frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 50)
+frame.Position = UDim2.new(0.3, 0, 0.2, 0)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BackgroundTransparency = 0.2
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
 
--- Check for red ball every frame
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+-- Label inside the frame
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 1, 0)
+label.Position = UDim2.new(0, 0, 0, 0)
+label.BackgroundTransparency = 1
+label.Text = "Ball is not red"
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.TextSize = 18
+label.Font = Enum.Font.GothamBold
+label.Parent = frame
+
+-- Function to check if a color is a shade of red
+local function isSimilarToRed(color)
+    return color.R > 0.5 and color.G < 0.3 and color.B < 0.3
+end
+
+-- Detection loop
 RunService.RenderStepped:Connect(function()
-	for _, ball in ipairs(workspace:GetDescendants()) do
-		if ball:IsA("Part") and ball.Name:lower():find("ball") then
-			local color = ball.Color
-			if color == Color3.fromRGB(255, 0, 0) then -- exact red
-				noticeLabel.Text = "The ball is red"
-				noticeLabel.Visible = true
-				return -- show the message only once for any red ball
-			end
-		end
-	end
-	-- Hide message if no red balls found
-	noticeLabel.Visible = false
+    local redDetected = false
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Part") and obj.Name:lower():find("ball") then
+            if isSimilarToRed(obj.Color) then
+                redDetected = true
+                break
+            end
+        end
+    end
+
+    if redDetected then
+        label.Text = "The ball is red"
+    else
+        label.Text = "Ball is not red"
+    end
 end)
