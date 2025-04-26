@@ -1,40 +1,184 @@
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
--- Create the screen GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BlackBoxGui"
-screenGui.Parent = playerGui
+screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
+screenGui.Parent = game:GetService("CoreGui")
 
--- Create the black draggable box
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 100)
-frame.Position = UDim2.new(0.5, -100, 0.5, -50)
-frame.BackgroundColor3 = Color3.new(0, 0, 0)
-frame.BackgroundTransparency = 0.2
-frame.Active = true
-frame.Draggable = true
-frame.Parent = screenGui
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 450, 0, 275)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
--- Create and apply an expanded hitbox for the ball
-local ball = workspace:WaitForChild("Ball")
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
 
--- Create a transparent, green glass dome hitbox around the ball
-local hitbox = Instance.new("Part")
-hitbox.Size = Vector3.new(20, 20, 20) -- Adjust size as needed
-hitbox.Shape = Enum.PartType.Ball
-hitbox.Transparency = 0.5
-hitbox.Color = Color3.fromRGB(0, 255, 0)
-hitbox.Material = Enum.Material.Glass
-hitbox.Anchored = true
-hitbox.CanCollide = false
-hitbox.Name = "ExpandedHitbox"
-hitbox.Parent = workspace
+-- HeadBar
+local headBar = Instance.new("Frame")
+headBar.Size = UDim2.new(1, 0, 0, 40)
+headBar.Position = UDim2.new(0, 0, 0, 0)
+headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+headBar.BackgroundTransparency = 0.2
+headBar.Parent = mainFrame
 
--- Update hitbox position to follow the ball
-game:GetService("RunService").RenderStepped:Connect(function()
-    if ball and ball.Parent then
-        hitbox.Position = ball.Position
+local headCorner = Instance.new("UICorner")
+headCorner.CornerRadius = UDim.new(0, 12)
+headCorner.Parent = headBar
+
+-- TextLabel for HeadBar
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Inertia"
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.TextSize = 20
+textLabel.Font = Enum.Font.GothamBold
+textLabel.Parent = headBar
+
+-- SideBar
+local sideBar = Instance.new("Frame")
+sideBar.Size = UDim2.new(1/3, 0, 1, -40)
+sideBar.Position = UDim2.new(0, 0, 0, 40)
+sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sideBar.BackgroundTransparency = 0.2
+sideBar.Parent = mainFrame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 12)
+sideCorner.Parent = sideBar
+
+-- Misc Button
+local miscButton = Instance.new("TextButton")
+miscButton.Size = UDim2.new(0.8, 0, 0, 50)
+miscButton.Position = UDim2.new(0.1, 0, 0, 10)
+miscButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+miscButton.Text = "Misc"
+miscButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+miscButton.TextSize = 18
+miscButton.Font = Enum.Font.GothamBold
+miscButton.Parent = sideBar
+
+local miscButtonCorner = Instance.new("UICorner")
+miscButtonCorner.CornerRadius = UDim.new(0, 12)
+miscButtonCorner.Parent = miscButton
+
+-- Auto Parry Text (hidden by default)
+local autoParryText = Instance.new("TextLabel")
+autoParryText.Size = UDim2.new(0, 130, 0, 50)
+autoParryText.Position = UDim2.new(0.22, 20, 0, 50)
+autoParryText.BackgroundTransparency = 1
+autoParryText.Text = "Auto Parry"
+autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoParryText.TextSize = 13
+autoParryText.Font = Enum.Font.GothamBold
+autoParryText.TextXAlignment = Enum.TextXAlignment.Center
+autoParryText.TextYAlignment = Enum.TextYAlignment.Center
+autoParryText.Visible = false -- Auto Parry label is hidden by default
+autoParryText.Parent = mainFrame
+
+-- Hitbox Text (hidden by default)
+local hitboxText = Instance.new("TextLabel")
+hitboxText.Size = UDim2.new(0, 130, 0, 50)
+hitboxText.Position = UDim2.new(0.22, 20, 0, 60) -- 10 pixels below Auto Parry (Auto Parry was at Y=50)
+hitboxText.BackgroundTransparency = 1
+hitboxText.Text = "Hitbox"
+hitboxText.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxText.TextSize = 13
+hitboxText.Font = Enum.Font.GothamBold
+hitboxText.TextXAlignment = Enum.TextXAlignment.Center
+hitboxText.TextYAlignment = Enum.TextYAlignment.Center
+hitboxText.Visible = false -- Also hidden by default
+hitboxText.Parent = mainFrame
+
+-- Slider Button (hidden by default)
+local sliderButton = Instance.new("TextButton")
+sliderButton.Size = UDim2.new(0, 40, 0, 20)
+sliderButton.Position = UDim2.new(0.90, 0, 0, 65)
+sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+sliderButton.Text = ""
+sliderButton.TextTransparency = 1
+sliderButton.Visible = false  -- Slider is hidden by default
+sliderButton.Parent = mainFrame
+
+local sliderButtonCorner = Instance.new("UICorner")
+sliderButtonCorner.CornerRadius = UDim.new(0, 12)
+sliderButtonCorner.Parent = sliderButton
+
+-- Knob
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 20, 0, 20)
+knob.Position = UDim2.new(0, 1, 0, 1)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BorderSizePixel = 0
+knob.Parent = sliderButton
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(0, 12)
+knobCorner.Parent = knob
+
+-- Toggle visibility when Misc button is clicked
+local sliderToggled = false
+local autoParry = false -- Default to auto parry being off
+
+miscButton.MouseButton1Click:Connect(function()
+    if autoParryText.Visible then
+        autoParryText.Visible = false
+        hitboxText.Visible = false -- hide Hitbox too
+        sliderButton.Visible = false
+    else
+        autoParryText.Visible = true
+        hitboxText.Visible = true -- show Hitbox too
+        sliderButton.Visible = true
+    end
+end)
+
+-- Slider Button functionality
+sliderButton.MouseButton1Click:Connect(function()
+    sliderToggled = not sliderToggled
+    if sliderToggled then
+        knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
+        knob.BackgroundTransparency = 0
+        sliderButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0) -- Green when on
+    else
+        knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
+        knob.BackgroundTransparency = 0.2
+        sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Gray when off
+    end
+
+    -- Update autoParry when the slider toggles
+    autoParry = sliderToggled
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+RunService.RenderStepped:Connect(function()
+    character = player.Character
+    if not character then return end
+
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if autoParry then
+        for _, ball in ipairs(workspace:GetDescendants()) do
+            if ball:IsA("Part") and ball.Name:lower():find("ball") then
+                local distance = (root.Position - ball.Position).Magnitude
+                if distance <= 20 then
+                    local VirtualInputManager = game:GetService("VirtualInputManager")
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+                    task.wait(0.05)
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                    break
+                end
+            end
+        end
     end
 end)
