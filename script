@@ -151,6 +151,7 @@ local sliderToggled = false
 local autoParry = false
 local blockToggled = false
 local autoBlock = false
+local yLevelDetection = false -- Track Y-level detection status
 
 miscButton.MouseButton1Click:Connect(function()
     local visible = not autoParryText.Visible
@@ -182,10 +183,12 @@ blockSliderButton.MouseButton1Click:Connect(function()
         blockKnob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
         blockKnob.BackgroundTransparency = 0
         blockSliderButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        yLevelDetection = true -- Activate Y-level detection when Auto Block is enabled
     else
         blockKnob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
         blockKnob.BackgroundTransparency = 0.2
         blockSliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        yLevelDetection = false -- Deactivate Y-level detection when Auto Block is disabled
     end
     autoBlock = blockToggled
 end)
@@ -203,6 +206,20 @@ RunService.RenderStepped:Connect(function()
     local root = character:FindFirstChild("HumanoidRootPart")
     if not root then return end
 
+    -- Movement Script based on Y level
+    local targetPosition = Vector3.new(573, 282, -800)
+    local function checkYLevel()
+        if yLevelDetection then
+            local yPosition = root.Position.Y
+            if yPosition > 280 then
+                character:MoveTo(targetPosition)
+            else
+                character.Humanoid:MoveTo(Vector3.new(root.Position.X, root.Position.Y, root.Position.Z))
+            end
+        end
+    end
+
+    -- Check if AutoParry is active
     if autoParry then
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
@@ -224,4 +241,7 @@ RunService.RenderStepped:Connect(function()
         local VirtualInputManager = game:GetService("VirtualInputManager")
         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.G, false, game)
     end
+
+    -- Call checkYLevel to update movement based on Y position
+    checkYLevel()
 end)
