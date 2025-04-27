@@ -3,58 +3,225 @@ screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = game:GetService("CoreGui")
 
+-- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 275)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -137)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.2
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
+
+-- HeadBar
+local headBar = Instance.new("Frame")
+headBar.Size = UDim2.new(1, 0, 0, 40)
+headBar.Position = UDim2.new(0, 0, 0, 0)
+headBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+headBar.BackgroundTransparency = 0.2
+headBar.Parent = mainFrame
+
+local headCorner = Instance.new("UICorner")
+headCorner.CornerRadius = UDim.new(0, 12)
+headCorner.Parent = headBar
+
+-- TextLabel for HeadBar
 local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(1, 0, 0, 40)
-textLabel.Position = UDim2.new(0, 0, 0, 0)
-textLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+textLabel.BackgroundTransparency = 1
 textLabel.Text = "Inertia"
 textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 textLabel.TextSize = 20
 textLabel.Font = Enum.Font.GothamBold
-textLabel.Parent = mainFrame
+textLabel.Parent = headBar
 
+-- SideBar
+local sideBar = Instance.new("Frame")
+sideBar.Size = UDim2.new(1/3, 0, 1, -40)
+sideBar.Position = UDim2.new(0, 0, 0, 40)
+sideBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sideBar.BackgroundTransparency = 0.2
+sideBar.Parent = mainFrame
+
+local sideCorner = Instance.new("UICorner")
+sideCorner.CornerRadius = UDim.new(0, 12)
+sideCorner.Parent = sideBar
+
+-- Misc Button
 local miscButton = Instance.new("TextButton")
-miscButton.Size = UDim2.new(0.3, 0, 0, 50)
-miscButton.Position = UDim2.new(0, 10, 0, 60)
+miscButton.Size = UDim2.new(0.8, 0, 0, 50)
+miscButton.Position = UDim2.new(0.1, 0, 0, 10)
 miscButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 miscButton.Text = "Misc"
 miscButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 miscButton.TextSize = 18
 miscButton.Font = Enum.Font.GothamBold
-miscButton.Parent = mainFrame
+miscButton.Parent = sideBar
 
+local miscButtonCorner = Instance.new("UICorner")
+miscButtonCorner.CornerRadius = UDim.new(0, 12)
+miscButtonCorner.Parent = miscButton
+
+-- Auto Parry Text
 local autoParryText = Instance.new("TextLabel")
 autoParryText.Size = UDim2.new(0, 130, 0, 50)
-autoParryText.Position = UDim2.new(0, 10, 0, 130)
+autoParryText.Position = UDim2.new(0.22, 20, 0, 50)
 autoParryText.BackgroundTransparency = 1
 autoParryText.Text = "Auto Parry"
 autoParryText.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoParryText.TextSize = 13
 autoParryText.Font = Enum.Font.GothamBold
+autoParryText.TextXAlignment = Enum.TextXAlignment.Center
+autoParryText.TextYAlignment = Enum.TextYAlignment.Center
 autoParryText.Visible = false
 autoParryText.Parent = mainFrame
 
-local hitboxText = Instance.new("TextLabel")
-hitboxText.Size = UDim2.new(0, 130, 0, 50)
-hitboxText.Position = UDim2.new(0, 10, 0, 190)
-hitboxText.BackgroundTransparency = 1
-hitboxText.Text = "Hitbox"
-hitboxText.TextColor3 = Color3.fromRGB(255, 255, 255)
-hitboxText.TextSize = 13
-hitboxText.Font = Enum.Font.GothamBold
-hitboxText.Visible = false
-hitboxText.Parent = mainFrame
+-- Slider for Auto Parry
+local sliderButton = Instance.new("TextButton")
+sliderButton.Size = UDim2.new(0, 40, 0, 20)
+sliderButton.Position = UDim2.new(0.90, 0, 0, 60)
+sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+sliderButton.Text = ""
+sliderButton.TextTransparency = 1
+sliderButton.Visible = false
+sliderButton.Parent = mainFrame
+
+local sliderButtonCorner = Instance.new("UICorner")
+sliderButtonCorner.CornerRadius = UDim.new(0, 12)
+sliderButtonCorner.Parent = sliderButton
+
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 20, 0, 20)
+knob.Position = UDim2.new(0, 1, 0, 1)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BorderSizePixel = 0
+knob.Parent = sliderButton
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(0, 12)
+knobCorner.Parent = knob
+
+-- NEW: Auto Block Text
+local autoBlockText = Instance.new("TextLabel")
+autoBlockText.Size = UDim2.new(0, 130, 0, 50)
+autoBlockText.Position = UDim2.new(0.22, 20, 0, 110)
+autoBlockText.BackgroundTransparency = 1
+autoBlockText.Text = "Auto Block"
+autoBlockText.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoBlockText.TextSize = 13
+autoBlockText.Font = Enum.Font.GothamBold
+autoBlockText.TextXAlignment = Enum.TextXAlignment.Center
+autoBlockText.TextYAlignment = Enum.TextYAlignment.Center
+autoBlockText.Visible = false
+autoBlockText.Parent = mainFrame
+
+-- NEW: Slider for Auto Block
+local blockSliderButton = Instance.new("TextButton")
+blockSliderButton.Size = UDim2.new(0, 40, 0, 20)
+blockSliderButton.Position = UDim2.new(0.90, 0, 0, 120)
+blockSliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+blockSliderButton.Text = ""
+blockSliderButton.TextTransparency = 1
+blockSliderButton.Visible = false
+blockSliderButton.Parent = mainFrame
+
+local blockSliderButtonCorner = Instance.new("UICorner")
+blockSliderButtonCorner.CornerRadius = UDim.new(0, 12)
+blockSliderButtonCorner.Parent = blockSliderButton
+
+local blockKnob = Instance.new("Frame")
+blockKnob.Size = UDim2.new(0, 20, 0, 20)
+blockKnob.Position = UDim2.new(0, 1, 0, 1)
+blockKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+blockKnob.BorderSizePixel = 0
+blockKnob.Parent = blockSliderButton
+
+local blockKnobCorner = Instance.new("UICorner")
+blockKnobCorner.CornerRadius = UDim.new(0, 12)
+blockKnobCorner.Parent = blockKnob
+
+-- Toggle Visibility for Sliders
+local sliderToggled = false
+local autoParry = false
+local blockToggled = false
+local autoBlock = false
 
 miscButton.MouseButton1Click:Connect(function()
-    local toggle = not autoParryText.Visible
-    autoParryText.Visible = toggle
-    hitboxText.Visible = toggle
+    local visible = not autoParryText.Visible
+    autoParryText.Visible = visible
+    sliderButton.Visible = visible
+    autoBlockText.Visible = visible
+    blockSliderButton.Visible = visible
+end)
+
+-- SliderButton Auto Parry Functionality
+sliderButton.MouseButton1Click:Connect(function()
+    sliderToggled = not sliderToggled
+    if sliderToggled then
+        knob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
+        knob.BackgroundTransparency = 0
+        sliderButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    else
+        knob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
+        knob.BackgroundTransparency = 0.2
+        sliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    end
+    autoParry = sliderToggled
+end)
+
+-- BlockSliderButton Auto Block Functionality
+blockSliderButton.MouseButton1Click:Connect(function()
+    blockToggled = not blockToggled
+    if blockToggled then
+        blockKnob:TweenPosition(UDim2.new(1, -19, 0, 1), "Out", "Quad", 0.2, true)
+        blockKnob.BackgroundTransparency = 0
+        blockSliderButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    else
+        blockKnob:TweenPosition(UDim2.new(0, 1, 0, 1), "Out", "Quad", 0.2, true)
+        blockKnob.BackgroundTransparency = 0.2
+        blockSliderButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    end
+    autoBlock = blockToggled
+end)
+
+-- Auto Parry Behavior
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+RunService.RenderStepped:Connect(function()
+    character = player.Character
+    if not character then return end
+
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if autoParry then
+        for _, ball in ipairs(workspace:GetDescendants()) do
+            if ball:IsA("Part") and ball.Name:lower():find("ball") then
+                local distance = (root.Position - ball.Position).Magnitude
+                if distance <= 20 then
+                    local VirtualInputManager = game:GetService("VirtualInputManager")
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+                    task.wait(0.05)
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                    break
+                end
+            end
+        end
+    end
+
+    -- Example Auto Block Behavior (customize if needed)
+    if autoBlock then
+        -- Your auto block functionality here (example: always hold G)
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.G, false, game)
+    end
 end)
