@@ -207,49 +207,20 @@ RunService.RenderStepped:Connect(function()
     if not root then return end
 
     -- Movement Script based on Y level
-    local PathfindingService = game:GetService("PathfindingService")
-local Players = game:GetService("Players")
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+local Player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-local character = Players.LocalPlayer.Character
-local humanoid = character:WaitForChild("Humanoid")
-local position = Vector3.new(573, 283, -800)
+RunService.RenderStepped:Connect(function()
+    if not yLevelDetection then return end -- if detection is off, do nothing
 
-local path = PathfindingService:CreatePath({
-    AgentRadius = 2,
-    AgentHeight = 5,
-    AgentCanJump = false,
-})
-
-local function activate()
-    path:ComputeAsync(character.HumanoidRootPart.Position, position)
-    local waypoints = path:GetWaypoints()
-    for _, waypoint in pairs(waypoints) do
-        local part = Instance.new("Part")
-        part.Position = waypoint.Position
-        part.Size = Vector3.new(0.5, 0.5, 0.5)
-        part.Anchored = true
-        part.CanCollide = false
-        part.Parent = game.Workspace
-    end
-end
-
-local function deactivate()
-    -- Remove all the parts that were created by the pathfinding
-    for _, child in pairs(game.Workspace:GetDescendants()) do
-        if child:IsA("BasePart") and child.Parent == game.Workspace then
-            child:Destroy()
-        end
-    end
-end
-
-character.Humanoid.StateChanged:Connect(function(oldState, newState)
-    if not yLevelDetection then return end
-    if newState == Enum.HumanoidStateType.FallingDown then
-        if character.HumanoidRootPart.Position.Y > 280 then
-            activate()
-        elseif character.HumanoidRootPart.Position.Y <= 280 then
-            deactivate()
+    local Character = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        if hrp.Position.Y > 280 then
+            VirtualInputManager:SendKeyEvent(true, "W", false, game)
+        else
+            VirtualInputManager:SendKeyEvent(false, "W", false, game)
         end
     end
 end)
