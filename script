@@ -207,7 +207,7 @@ RunService.RenderStepped:Connect(function()
     if not root then return end
 
     -- Movement Script based on Y level
-    local targetPosition = Vector3.new(573, 282, -800)
+    local targetPosition = Vector3.new(573, 286, -800)
     local function checkYLevel()
         if yLevelDetection then
             local yPosition = root.Position.Y
@@ -224,10 +224,10 @@ RunService.RenderStepped:Connect(function()
         for _, ball in ipairs(workspace:GetDescendants()) do
             if ball:IsA("Part") and ball.Name:lower():find("ball") then
                 local distance = (root.Position - ball.Position).Magnitude
-                if distance <= 20 then
+                if distance <= 31 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                    task.wait(0.05)
+                    task.wait(0.07)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
                     break
                 end
