@@ -207,26 +207,18 @@ RunService.RenderStepped:Connect(function()
     if not root then return end
 
     -- Movement Script based on Y level
-    local holdingW = false
-
-RunService.RenderStepped:Connect(function()
-    local character = player.Character
-    if not character then return end
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-
-    if yLevelDetection then
-        if not holdingW then
-            holdingW = true
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.W, false, game)
-        end
-    else
-        if holdingW then
-            holdingW = false
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.W, false, game)
+    local targetPosition = Vector3.new(573, 283, -800)
+    local function checkYLevel()
+        if yLevelDetection then
+    task.wait(4)
+            local yPosition = root.Position.Y
+            if yPosition > 280 then
+                character:MoveTo(targetPosition)
+            else
+                character.Humanoid:MoveTo(Vector3.new(root.Position.X, root.Position.Y, root.Position.Z))
+            end
         end
     end
-end)
 
     -- Check if AutoParry is active
     if autoParry then
@@ -235,6 +227,7 @@ end)
                 local distance = (root.Position - ball.Position).Magnitude
                 if distance <= 31 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
+                    if ball.Color == Color3.fromRGB(255, 0, 0)
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                     task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
