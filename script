@@ -207,19 +207,23 @@ RunService.RenderStepped:Connect(function()
     if not root then return end
 
     -- Movement Script based on Y level
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-local Player = game.Players.LocalPlayer
-local RunService = game:GetService("RunService")
+    local holdingW = false
 
 RunService.RenderStepped:Connect(function()
-    if not yLevelDetection then return end -- if detection is off, do nothinh
-    local Character = Player.Character or Player.CharacterAdded:Wait()
-    local hrp = Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        if hrp.Position.Y > 280 then
-            VirtualInputManager:SendKeyEvent(true, "W", false, game)
-        else
-            VirtualInputManager:SendKeyEvent(false, "W", false, game)
+    local character = player.Character
+    if not character then return end
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if yLevelDetection then
+        if not holdingW then
+            holdingW = true
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.W, false, game)
+        end
+    else
+        if holdingW then
+            holdingW = false
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.W, false, game)
         end
     end
 end)
@@ -231,6 +235,7 @@ end)
                 local distance = (root.Position - ball.Position).Magnitude
                 if distance <= 31 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
+                    if ball.Color == Color3.fromRGB(255, 0, 0)
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                     task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
