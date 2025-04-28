@@ -207,17 +207,20 @@ RunService.RenderStepped:Connect(function()
     if not root then return end
 
     -- Movement Script based on Y level
-    local targetPosition = Vector3.new(573, 286, -800)
+    local targetPosition = Vector3.new(573, 284, -800)
     local function checkYLevel()
-        if yLevelDetection then
-            local yPosition = root.Position.Y
-            if yPosition > 280 then
-                character:MoveTo(targetPosition)
-            else
-                character.Humanoid:MoveTo(Vector3.new(root.Position.X, root.Position.Y, root.Position.Z))
-            end
+    if yLevelDetection then
+        local yPosition = root.Position.Y
+        if yPosition > 280 then
+            character:MoveTo(targetPosition)
+        else
+            character.Humanoid:MoveTo(Vector3.new(root.Position.X, root.Position.Y, root.Position.Z))
         end
     end
+
+    -- Wait for 0.7 seconds after the logic
+    task.wait(0.7)
+ end
 
     -- Check if AutoParry is active
     if autoParry then
