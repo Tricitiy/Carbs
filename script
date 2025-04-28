@@ -235,7 +235,6 @@ end)
                 local distance = (root.Position - ball.Position).Magnitude
                 if distance <= 31 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
-                    if ball.Color == Color3.fromRGB(255, 0, 0)
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                     task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
