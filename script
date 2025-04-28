@@ -212,15 +212,13 @@ RunService.RenderStepped:Connect(function()
     if yLevelDetection then
         local yPosition = root.Position.Y
         if yPosition > 280 then
+    task.wait(5)
             character:MoveTo(targetPosition)
         else
             character.Humanoid:MoveTo(Vector3.new(root.Position.X, root.Position.Y, root.Position.Z))
         end
-    end
-
-    -- Wait for 0.7 seconds after the logic
-    task.wait(10)
- end
+     end
+  end
 
     -- Check if AutoParry is active
     if autoParry then
@@ -230,7 +228,7 @@ RunService.RenderStepped:Connect(function()
                 if distance <= 31 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                    task.wait(0.07)
+                    task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
                     break
                 end
