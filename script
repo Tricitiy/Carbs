@@ -212,8 +212,7 @@ local Player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
 RunService.RenderStepped:Connect(function()
-    if not yLevelDetection then return end -- if detection is off, do nothing
-
+    if not yLevelDetection then return end -- if detection is off, do nothinh
     local Character = Player.Character or Player.CharacterAdded:Wait()
     local hrp = Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -232,7 +231,6 @@ end)
                 local distance = (root.Position - ball.Position).Magnitude
                 if distance <= 31 then
                     local VirtualInputManager = game:GetService("VirtualInputManager")
-                    if ball.Color == Color3.fromRGB(255, 0, 0) then
                     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                     task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
