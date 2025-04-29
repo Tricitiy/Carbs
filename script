@@ -243,12 +243,11 @@ RunService.RenderStepped:Connect(function()
                 local highlight = ball:FindFirstChild("Highlight")
                 if highlight and highlight.FillColor == Color3.fromRGB(255, 0, 0) then
                     ballDetector = true
+                else
+                    ballDetector = false
                     return
                 end
             end
         end
-        ballDetector = false -- No red ball detected
-    else
-        ballDetector = false -- Turn off detection when autoParry is off
     end
 end)
