@@ -210,7 +210,7 @@ RunService.RenderStepped:Connect(function()
     local targetPosition = Vector3.new(573, 283, -800)
     local function checkYLevel()
         if yLevelDetection then
-    task.wait(4)
+    task.wait(0.8)
             local yPosition = root.Position.Y
             if yPosition > 280 then
                 character:MoveTo(targetPosition)
@@ -221,7 +221,7 @@ RunService.RenderStepped:Connect(function()
     end
 
     -- Check if AutoParry is active
-    if ballDetector then
+    if autoParry then
     for _, ball in ipairs(workspace:GetDescendants()) do
         local distance = (root.Position - ball.Position).Magnitude
            if distance <= 31 then
@@ -230,23 +230,6 @@ RunService.RenderStepped:Connect(function()
                 task.wait(0.05)
                 VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
                 break
-            end
-        end
-    end
-end)
-
--- ball highlight 
-RunService.RenderStepped:Connect(function()
-    if autoParry then
-        for _, ball in ipairs(workspace:GetDescendants()) do
-            if ball:IsA("Part") and ball.Name:lower():find("ball") then
-                local highlight = ball:FindFirstChild("Highlight")
-                if highlight and highlight.FillColor == Color3.fromRGB(255, 0, 0) then
-                    ballDetector = true
-                else
-                    ballDetector = false
-                    return
-                end
             end
         end
     end
