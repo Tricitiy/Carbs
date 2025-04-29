@@ -220,19 +220,29 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Check if AutoParry is active
+-- Ball Detection --
+RunService.RenderStepped:Connect(function()
     if autoParry then
+        for _, ball in ipairs(workspace:GetDescendants()) do
+            if ball:IsA("Part") and ball.Name:lower():find("ball") then
+                local highlight = ball:FindFirstChild("Highlight")
+                if highlight and highlight.FillColor == Color3.fromRGB(255, 0, 0) then
+                    ballDetector = true
+                    return
+                end
+            end
+        end
+        ballDetector = false -- No red ball detected
+    else
+        ballDetector = false -- Turn off detection when autoParry is off
+    end
+end)
+
+    -- Check if AutoParry is active
+    if ballDetector then
     for _, ball in ipairs(workspace:GetDescendants()) do
         local distance = (root.Position - ball.Position).Magnitude
-        if distance <= 31 then
-            local highlight = ball:FindFirstChild("Highlight")
-            if highlight and highlight.FillColor == Color3.fromRGB(255, 0, 0) then
-                ballDetector = true
-            else
-                ballDetector = false
-            end
-
-            if ballDetector then
+           if distance <= 31 then
                 local VirtualInputManager = game:GetService("VirtualInputManager")
                 VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                 task.wait(0.05)
