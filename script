@@ -220,17 +220,22 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Check if AutoParry is active
-    if autoParry then
-    for _, ball in ipairs(workspace:GetDescendants()) do
-        local distance = (root.Position - ball.Position).Magnitude
-           if distance <= 31 then
+local RB = Color3.new(1, 0, 0)
+
+-- Loop that checks continuously
+while autoParry do
+    local ball = workspace:FindFirstChild("Part")
+    if ball and ball:FindFirstChild("Highlight") then
+        if ball.Highlight.FillColor == RB then
+            local distance = (root.Position - ball.Position).Magnitude
+            if distance <= 31 then
                 local VirtualInputManager = game:GetService("VirtualInputManager")
                 VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
                 task.wait(0.05)
                 VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-                break
+                break -- Optional: stops the loop after a successful parry
             end
         end
     end
-end)
+end
+
