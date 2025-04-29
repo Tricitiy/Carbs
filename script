@@ -220,24 +220,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
--- Ball Detection --
-RunService.RenderStepped:Connect(function()
-    if autoParry then
-        for _, ball in ipairs(workspace:GetDescendants()) do
-            if ball:IsA("Part") and ball.Name:lower():find("ball") then
-                local highlight = ball:FindFirstChild("Highlight")
-                if highlight and highlight.FillColor == Color3.fromRGB(255, 0, 0) then
-                    ballDetector = true
-                    return
-                end
-            end
-        end
-        ballDetector = false -- No red ball detected
-    else
-        ballDetector = false -- Turn off detection when autoParry is off
-    end
-end)
-
     -- Check if AutoParry is active
     if ballDetector then
     for _, ball in ipairs(workspace:GetDescendants()) do
@@ -251,15 +233,4 @@ end)
             end
         end
     end
-end
-
-    -- Example Auto Block Behavior (customize if needed)
-    if autoBlock then
-        -- Your auto block functionality here (example: always hold G)
-        local VirtualInputManager = game:GetService("VirtualInputManager")
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.G, false, game)
-    end
-
-    -- Call checkYLevel to update movement based on Y position
-    checkYLevel()
 end)
