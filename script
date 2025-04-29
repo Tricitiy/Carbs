@@ -210,7 +210,6 @@ RunService.RenderStepped:Connect(function()
     local targetPosition = Vector3.new(573, 283, -800)
     local function checkYLevel()
         if yLevelDetection then
-    task.wait(0.8)
             local yPosition = root.Position.Y
             if yPosition > 280 then
                 character:MoveTo(targetPosition)
