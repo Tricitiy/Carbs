@@ -211,33 +211,38 @@ local function IsPlayerVisible(Player)
     return ((ObscuringObjects == 0 and true) or (ObscuringObjects > 0 and false))
 end
 
-local function getClosestPlayer()
-    if not Options.TargetPart.Value then return end
-    local Closest
-    local DistanceToMouse
-    for _, Player in next, GetPlayers(Players) do
-        if Player == LocalPlayer then continue end
-        if Toggles.TeamCheck.Value and Player.Team == LocalPlayer.Team then continue end
-
-        local Character = Player.Character
-        if not Character then continue end
-        
-        if Toggles.VisibleCheck.Value and not IsPlayerVisible(Player) then continue end
-
-        local HumanoidRootPart = FindFirstChild(Character, "HumanoidRootPart")
-        local Humanoid = FindFirstChild(Character, "Humanoid")
-        if not HumanoidRootPart or not Humanoid or Humanoid and Humanoid.Health <= 0 then continue end
-
-        local ScreenPosition, OnScreen = getPositionOnScreen(HumanoidRootPart.Position)
-        if not OnScreen then continue end
-
-        local Distance = (getMousePosition() - ScreenPosition).Magnitude
-        if Distance <= (DistanceToMouse or Options.Radius.Value or 2000) then
-            Closest = ((Options.TargetPart.Value == "Random" and Character[ValidTargetParts[math.random(1, #ValidTargetParts)]]) or Character[Options.TargetPart.Value])
-            DistanceToMouse = Distance
+local function IsKnifeHolder(player)
+    local character = player.Character
+    if not character then return false end
+    -- Check Tools in character (equipped weapon)
+    for _, item in ipairs(character:GetChildren()) do
+        if item:IsA("Tool") then
+            local name = string.lower(item.Name)
+            if string.find(name, "knife") then
+                return true
+            end
+            -- optional extra keywords
+            if string.find(name, "dagger") or string.find(name, "blade") then
+                return true
+            end
         end
     end
-    return Closest
+    return false
+end
+local function getKnifePlayer()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local character = player.Character
+            if character and IsKnifeHolder(player) then
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                local hum = character:FindFirstChild("Humanoid")
+                if hrp and hum and hum.Health > 0 then
+                    return character[Options.TargetPart.Value] or hrp
+                end
+            end
+        end
+    end
+    return nil
 end
 
 -- ui creating & handling
