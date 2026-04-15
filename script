@@ -373,7 +373,7 @@ resume(create(function()
     RenderStepped:Connect(function()
         if Toggles.MousePosition.Value and Toggles.aim_Enabled.Value then
             if getClosestPlayer() then 
-                local Root = getClosestPlayer().Parent.PrimaryPart or getClosestPlayer()
+                local Root = getKnifePlayer().Parent.PrimaryPart or getKnifePlayer()
                 local RootToViewportPoint, IsOnScreen = WorldToViewportPoint(Camera, Root.Position);
                 -- using PrimaryPart instead because if your Target Part is "Random" it will flicker the square between the Target's Head and HumanoidRootPart (its annoying)
                 
@@ -405,7 +405,7 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
             if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithIgnoreList) then
                 local A_Ray = Arguments[2]
 
-                local HitPart = getClosestPlayer()
+                local HitPart = getKnifePlayer()
                 if HitPart then
                     local Origin = A_Ray.Origin
                     local Direction = getDirection(Origin, HitPart.Position)
@@ -418,7 +418,7 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
             if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithWhitelist) then
                 local A_Ray = Arguments[2]
 
-                local HitPart = getClosestPlayer()
+                local HitPart = getKnifePlayer()
                 if HitPart then
                     local Origin = A_Ray.Origin
                     local Direction = getDirection(Origin, HitPart.Position)
@@ -444,7 +444,7 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
             if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
                 local A_Origin = Arguments[2]
 
-                local HitPart = getClosestPlayer()
+                local HitPart = getKnifePlayer()
                 if HitPart then
                     Arguments[3] = getDirection(A_Origin, HitPart.Position)
 
@@ -459,7 +459,7 @@ end))
 local oldIndex = nil 
 oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, Index)
     if self == Mouse and not checkcaller() and Toggles.aim_Enabled.Value and Options.Method.Value == "Mouse.Hit/Target" and getClosestPlayer() then
-        local HitPart = getClosestPlayer()
+        local HitPart = getKnifePlayer()
          
         if Index == "Target" or Index == "target" then 
             return HitPart
