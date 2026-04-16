@@ -530,6 +530,75 @@ local function stopGlow()
     end
 end
 
+-- ── FLEE MODULE (paste at the bottom of your existing script) ────────────────
+
+local Players           = game:GetService("Players")
+local RunService        = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local fleeActive  = false
+local FLEE_RADIUS = 10   -- studs before fleeing kicks in
+local FLEE_SPEED  = 1    -- increase to run further each frame
+
+-- ── chat toggle ─────────────────────────────────────────────────────────────
+localPlayer.Chatted:Connect(function(message)
+    if message:lower() == "/flee" then
+        fleeActive = not fleeActive
+        print(fleeActive and "[Flee] Active" or "[Flee] Disabled")
+    end
+end)
+
+-- ── auto-disable on death ────────────────────────────────────────────────────
+local function connectDeath(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.Died:Connect(function()
+        fleeActive = false
+        print("[Flee] Disabled — you died")
+    end)
+end
+
+if localPlayer.Character then connectDeath(localPlayer.Character) end
+localPlayer.CharacterAdded:Connect(connectDeath)
+
+-- ── main loop ────────────────────────────────────────────────────────────────
+RunService.Heartbeat:Connect(function()
+    if not fleeActive then return end
+
+    local character = localPlayer.Character
+    if not character then return end
+
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not rootPart or not humanoid then return end
+    if humanoid.Health <= 0 then return end
+
+    local myPos = rootPart.Position
+    local closestThreat = nil
+    local closestDist   = math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and isKnifeHolder(player) then
+            local char = player.Character
+            if char then
+                local theirRoot = char:FindFirstChild("HumanoidRootPart")
+                if theirRoot then
+                    local dist = (theirRoot.Position - myPos).Magnitude
+                    if dist <= FLEE_RADIUS and dist < closestDist then
+                        closestDist   = dist
+                        closestThreat = theirRoot.Position
+                    end
+                end
+            end
+        end
+    end
+
+    if closestThreat then
+        local fleeDir = (myPos - closestThreat).Unit
+        local target  = myPos + fleeDir * 20 * FLEE_SPEED
+        humanoid:MoveTo(target)
+    end
+end)
+
 ------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
