@@ -355,6 +355,91 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 ------------------------------------------------------------
+-- Aim Assist (Whitelisted Only)
+-- Soft crosshair pull toward nearest knife holder in 1st person
+------------------------------------------------------------
+
+local Camera         = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+
+local AIM_ASSIST_RADIUS   = 20   -- max stud distance to a target for assist to activate
+local AIM_ASSIST_ANGLE    = 15   -- degrees from crosshair center to trigger pull
+local AIM_ASSIST_STRENGTH = 0.1  -- 0 to 1, how strongly it pulls (keep low for natural feel)
+
+local function getScreenCenter()
+    return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+end
+
+local function getAngleToCrosshair(targetPosition)
+    local screenPos, onScreen = Camera:WorldToViewportPoint(targetPosition)
+    if not onScreen then return math.huge, nil end
+    local screenVec = Vector2.new(screenPos.X, screenPos.Y)
+    local center = getScreenCenter()
+    local delta = screenVec - center
+    local angle = math.deg(math.atan2(delta.Y, delta.X))
+    local dist = delta.Magnitude
+    return dist, screenVec
+end
+
+local function findAimAssistTarget()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+
+    local bestTarget = nil
+    local bestScreenDist = math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+        if not isKnifeHolder(player) then continue end
+        local enemyChar = player.Character
+        if not enemyChar then continue end
+        local enemyHrp = enemyChar:FindFirstChild("HumanoidRootPart")
+        if not enemyHrp then continue end
+
+        -- Check world distance first
+        local worldDist = (hrp.Position - enemyHrp.Position).Magnitude
+        if worldDist > AIM_ASSIST_RADIUS then continue end
+
+        -- Check how close they are to the crosshair
+        local screenDist, _ = getAngleToCrosshair(enemyHrp.Position)
+        local angleThreshold = AIM_ASSIST_ANGLE * (Camera.ViewportSize.X / 2) / 90
+        if screenDist < angleThreshold and screenDist < bestScreenDist then
+            bestScreenDist = screenDist
+            bestTarget = enemyHrp
+        end
+    end
+
+    return bestTarget
+end
+
+local function applyAimAssist()
+    if not WHITELIST[LocalPlayer.Name] then return end
+    if Camera.CameraType ~= Enum.CameraType.Custom then return end
+
+    -- Only in 1st person
+    if Camera.CFrame.Position:FuzzyEq(
+        LocalPlayer.Character and
+        LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and
+        LocalPlayer.Character.HumanoidRootPart.Position or Vector3.zero,
+        2
+    ) == false then return end
+
+    local target = findAimAssistTarget()
+    if not target then return end
+
+    local targetPos = target.Position
+    local camCFrame = Camera.CFrame
+    local dirToTarget = (targetPos - camCFrame.Position).Unit
+    local targetCFrame = CFrame.lookAt(camCFrame.Position, camCFrame.Position + dirToTarget)
+
+    Camera.CFrame = camCFrame:Lerp(targetCFrame, AIM_ASSIST_STRENGTH)
+end
+
+RunService.Heartbeat:Connect(applyAimAssist)
+
+------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
 local lastESP = 0
