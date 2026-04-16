@@ -220,7 +220,7 @@ for _, p in ipairs(Players:GetPlayers()) do watchPlayer(p) end
 Players.PlayerAdded:Connect(watchPlayer)
 
 ------------------------------------------------------------
--- Coin Pathfinding
+-- Coin Pathfinding (fixed)
 ------------------------------------------------------------
 local isPathfinding = false
 local currentThread = nil
@@ -252,7 +252,9 @@ local function findNearestCoin()
     local nearest, nearestDist = nil, math.huge
 
     local function searchFolder(parent)
-        for _, obj in ipairs(parent:GetChildren()) do
+        local ok, children = pcall(function() return parent:GetChildren() end)
+        if not ok then return end
+        for _, obj in ipairs(children) do
             if matchesAny(obj.Name, COIN_KEYWORDS) and obj:IsA("BasePart") then
                 local dist = (hrp.Position - obj.Position).Magnitude
                 if dist < nearestDist then
@@ -283,31 +285,52 @@ local function moveToCoin(coin)
     end)
 
     if not ok or path.Status ~= Enum.PathStatus.Success then
+        -- fallback: walk directly
         hum:MoveTo(coin.Position)
+        task.wait(0.5)
         return
     end
 
     local waypoints = path:GetWaypoints()
-    for _, waypoint in ipairs(waypoints) do
-        if not isPathfinding then break end
-        if not isHoldingTeddy() then break end
-        if not coin or not coin.Parent then break end
 
+    for i, waypoint in ipairs(waypoints) do
+        if not isPathfinding then return end
+        if not isHoldingTeddy() then return end
+        if not coin or not coin.Parent then return end -- coin collected, exit immediately
+
+        -- Jump waypoint
         if waypoint.Action == Enum.PathWaypointAction.Jump then
             hum.Jump = true
+            task.wait(0.1)
         end
 
         hum:MoveTo(waypoint.Position)
 
-        local timeout = 3
-        local elapsed = 0
+        local timeout   = 2.5
+        local elapsed   = 0
+        local stuckTime = 0
+        local lastPos   = hrp.Position
+
         while elapsed < timeout do
-            if not isPathfinding then break end
+            if not isPathfinding then return end
+            if not coin or not coin.Parent then return end -- coin collected mid-path
+
             local dist = (hrp.Position - waypoint.Position).Magnitude
             if dist <= WAYPOINT_REACHED_DIST then break end
-            if elapsed > 1.5 then
-                hum.Jump = true
+
+            -- Stuck detection: if barely moved in 0.5s, jump
+            local moved = (hrp.Position - lastPos).Magnitude
+            if moved < 0.5 then
+                stuckTime += 0.1
+                if stuckTime >= 0.5 then
+                    hum.Jump = true
+                    stuckTime = 0
+                end
+            else
+                stuckTime = 0
             end
+
+            lastPos  = hrp.Position
             elapsed += task.wait(0.1)
         end
     end
@@ -324,7 +347,7 @@ local function startPathfinding()
             print("[Pathfinding] No coins found")
             task.wait(1)
         end
-        task.wait(PATH_REFRESH_RATE)
+        -- No extra wait here — loop immediately recalculates after each coin
     end
     isPathfinding = false
     print("[Pathfinding] Stopped")
