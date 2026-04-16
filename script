@@ -1,3 +1,83 @@
+-- Credit Intro
+-- "Made by Tricitiy" fades in, stays, then fades out
+
+local Players     = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui   = LocalPlayer.PlayerGui
+
+local function showCredits()
+    -- GUI setup
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name           = "CreditGui"
+    screenGui.ResetOnSpawn   = false
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent         = PlayerGui
+
+    -- Background dim
+    local bg = Instance.new("Frame")
+    bg.Size                 = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+    bg.BackgroundTransparency = 1
+    bg.BorderSizePixel      = 0
+    bg.Parent               = screenGui
+
+    -- Credit text
+    local label = Instance.new("TextLabel")
+    label.Size                  = UDim2.new(0, 600, 0, 80)
+    label.Position              = UDim2.new(0.5, 0, 0.5, 0)
+    label.AnchorPoint           = Vector2.new(0.5, 0.5)
+    label.BackgroundTransparency = 1
+    label.Text                  = "Made by Tricitiy"
+    label.TextColor3            = Color3.fromRGB(255, 255, 255)
+    label.TextTransparency      = 1
+    label.TextScaled            = true
+    label.Font                  = Enum.Font.GothamBold
+    label.Parent                = screenGui
+
+    -- Stroke for style
+    local stroke = Instance.new("UIStroke")
+    stroke.Color       = Color3.fromRGB(255, 255, 255)
+    stroke.Thickness   = 1.5
+    stroke.Transparency = 1
+    stroke.Parent      = label
+
+    local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+    -- Expand + fade in
+    label.TextSize = 1
+    TweenService:Create(label, tweenInfo, {
+        TextTransparency = 0,
+        TextSize         = 42,
+    }):Play()
+    TweenService:Create(stroke, tweenInfo, {
+        Transparency = 0,
+    }):Play()
+    TweenService:Create(bg, tweenInfo, {
+        BackgroundTransparency = 0.6,
+    }):Play()
+
+    -- Wait then fade out
+    task.wait(3)
+
+    local fadeInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+
+    TweenService:Create(label, fadeInfo, {
+        TextTransparency = 1,
+    }):Play()
+    TweenService:Create(stroke, fadeInfo, {
+        Transparency = 1,
+    }):Play()
+    TweenService:Create(bg, fadeInfo, {
+        BackgroundTransparency = 1,
+    }):Play()
+
+    task.wait(0.8)
+    screenGui:Destroy()
+end
+
+task.spawn(showCredits)
+
 -- MM2 Admin ESP — Item Detector + Whitelisted Stat Looper
 
 local Players    = game:GetService("Players")
@@ -139,145 +219,135 @@ end)
 
 print("[Admin ESP] Running — Knife=Red, Gun=Blue, No weapon=Green")
 
--- Silent Aim Logic (Gun Holder Activation)
-
-local Camera = workspace.CurrentCamera
+-- SERVICES
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
 
-local GetPartsObscuringTarget = Camera.GetPartsObscuringTarget
-local FindFirstChild = game.FindFirstChild
-
--- Gun keywords
-local GUN_KEYWORDS = {"gun", "sheriff", "pistol", "revolver"}
-
-local function isPlayerHoldingGun()
-    local character = LocalPlayer.Character
-    if not character then return false end
-    for _, item in ipairs(character:GetChildren()) do
-        if item:IsA("Tool") then
-            local name = string.lower(item.Name)
-            for _, kw in ipairs(GUN_KEYWORDS) do
-                if string.find(name, kw) then
-                    return true
-                end
-            end
-        end
-    end
-    return false
-end
-
-local function IsKnifeHolder(player)
-    local character = player.Character
-    if not character then return false end
-    for _, item in ipairs(character:GetChildren()) do
-        if item:IsA("Tool") then
-            local name = string.lower(item.Name)
-            if string.find(name, "knife") or string.find(name, "dagger") or string.find(name, "blade") then
-                return true
-            end
-        end
-    end
-    return false
-end
-
-local function getKnifePlayer()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            local character = player.Character
-            if character and IsKnifeHolder(player) then
-                local hrp = character:FindFirstChild("HumanoidRootPart")
-                local hum = character:FindFirstChild("Humanoid")
-                if hrp and hum and hum.Health > 0 then
-                    return character:FindFirstChild("HumanoidRootPart") or hrp
-                end
-            end
-        end
-    end
-    return nil
-end
-
-local function getDirection(Origin, Position)
-    return (Position - Origin).Unit * 1000
-end
-
-local function ValidateArguments(Args, RayMethod)
-    if #Args < RayMethod.ArgCountRequired then return false end
-    local Matches = 0
-    for Pos, Argument in next, Args do
-        if typeof(Argument) == RayMethod.Args[Pos] then
-            Matches = Matches + 1
-        end
-    end
-    return Matches >= RayMethod.ArgCountRequired
-end
-
-local ExpectedArguments = {
-    FindPartOnRayWithIgnoreList = {ArgCountRequired = 3, Args = {"Instance", "Ray", "table", "boolean", "boolean"}},
-    FindPartOnRayWithWhitelist = {ArgCountRequired = 3, Args = {"Instance", "Ray", "table", "boolean"}},
-    FindPartOnRay = {ArgCountRequired = 2, Args = {"Instance", "Ray", "Instance", "boolean", "boolean"}},
-    Raycast = {ArgCountRequired = 3, Args = {"Instance", "Vector3", "Vector3", "RaycastParams"}}
+-- CONFIG
+getgenv().Config = {
+    Hitbox = {
+        Enabled = true,
+        Size = 15,
+        TeamCheck = true,
+        ShowBox = false
+    },
+    Aimbot = {
+        Enabled = false,
+        FOV = 120,
+        ShowFOV = false,
+        TeamCheck = true,
+        VisibleCheck = true,
+        HitChance = 82,
+        Prediction = true,
+        PredAmount = 0.135,
+        Jitter = 0.8
+    }
 }
 
-local oldNamecall
-oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(...)
-    local Method = getnamecallmethod()
-    local Arguments = {...}
-    local self = Arguments[1]
-    
-    if self == workspace and not checkcaller() and isPlayerHoldingGun() then
-        local HitPart = getKnifePlayer()
-        if HitPart then
-            if Method == "FindPartOnRayWithIgnoreList" then
-                if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithIgnoreList) then
-                    local A_Ray = Arguments[2]
-                    local Origin = A_Ray.Origin
-                    local Direction = getDirection(Origin, HitPart.Position)
-                    Arguments[2] = Ray.new(Origin, Direction)
-                    return oldNamecall(unpack(Arguments))
-                end
-            elseif Method == "FindPartOnRayWithWhitelist" then
-                if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRayWithWhitelist) then
-                    local A_Ray = Arguments[2]
-                    local Origin = A_Ray.Origin
-                    local Direction = getDirection(Origin, HitPart.Position)
-                    Arguments[2] = Ray.new(Origin, Direction)
-                    return oldNamecall(unpack(Arguments))
-                end
-            elseif Method == "FindPartOnRay" or Method == "findPartOnRay" then
-                if ValidateArguments(Arguments, ExpectedArguments.FindPartOnRay) then
-                    local A_Ray = Arguments[2]
-                    local Origin = A_Ray.Origin
-                    local Direction = getDirection(Origin, HitPart.Position)
-                    Arguments[2] = Ray.new(Origin, Direction)
-                    return oldNamecall(unpack(Arguments))
-                end
-            elseif Method == "Raycast" then
-                if ValidateArguments(Arguments, ExpectedArguments.Raycast) then
-                    local A_Origin = Arguments[2]
-                    Arguments[3] = getDirection(A_Origin, HitPart.Position)
-                    return oldNamecall(unpack(Arguments))
-                end
-            end
-        end
-    end
-    return oldNamecall(...)
-end))
+local Config = getgenv().Config
 
-local oldIndex
-oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, Index)
-    if self == Mouse and not checkcaller() and isPlayerHoldingGun() then
-        local HitPart = getKnifePlayer()
-        if HitPart then
-            if Index == "Target" or Index == "target" then 
-                return HitPart
-            elseif Index == "Hit" or Index == "hit" then 
-                return HitPart.CFrame
-            elseif Index == "UnitRay" then 
-                return Ray.new(self.Origin, (self.Hit - self.Origin).Unit)
+-- R6 / R15
+local function getTorso(char)
+    return char:FindFirstChild("UpperTorso")
+        or char:FindFirstChild("LowerTorso")
+        or char:FindFirstChild("Torso")
+end
+
+-- HITBOX
+-- HITBOX LOGIC
+local function getTorso(char)
+    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+end
+
+local function createHitbox(char)
+    local torso = getTorso(char)
+    if not torso then return end
+
+    local plr = Players:GetPlayerFromCharacter(char)
+    if not plr then return end
+    if Config.Hitbox.TeamCheck and plr.Team == LocalPlayer.Team then return end
+
+    local hb = char:FindFirstChild("SilentHitbox")
+    local size = Config.Hitbox.Size + math.random(-1,1)
+
+    if hb then
+        hb.Size = Vector3.new(size,size,size)
+        return
+    end
+
+    hb = Instance.new("Part")
+    hb.Name = "SilentHitbox"
+    hb.Size = Vector3.new(size,size,size)
+    hb.CFrame = torso.CFrame
+    hb.Transparency = 1
+    hb.CanCollide = false
+    hb.CanTouch = false
+    hb.CanQuery = true
+    hb.Massless = true
+    hb.Parent = char
+
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = hb
+    weld.Part1 = torso
+    weld.Parent = hb
+
+    if Config.Hitbox.ShowBox then
+        local box = Instance.new("SelectionBox")
+        box.Adornee = hb
+        box.Color3 = Color3.fromRGB(255,0,0)
+        box.LineThickness = 0.05
+        box.Parent = hb
+    end
+end
+
+local function removeHitbox(char)
+    local hb = char:FindFirstChild("SilentHitbox")
+    if hb then hb:Destroy() end
+end
+
+-- KNIFE DETECTION LOGIC
+local KNIFE_KEYWORDS = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
+
+local function isKnifeTool(toolName)
+    local lower = string.lower(toolName)
+    for _, kw in ipairs(KNIFE_KEYWORDS) do
+        if string.find(lower, kw) then return true end
+    end
+    return false
+end
+
+local function hasKnife(player)
+    local char = player.Character
+    if char then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and isKnifeTool(item.Name) then return true end
+        end
+    end
+    local bp = player:FindFirstChild("Backpack")
+    if bp then
+        for _, item in ipairs(bp:GetChildren()) do
+            if item:IsA("Tool") and isKnifeTool(item.Name) then return true end
+        end
+    end
+    return false
+end
+
+-- LOOP HITBOX (INTEGRATED)
+task.spawn(function()
+    while true do
+        task.wait(0.35 + math.random()*0.15)
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                -- Check if enabled AND if the target has a knife
+                if Config.Hitbox.Enabled and hasKnife(plr) then
+                    createHitbox(plr.Character)
+                else
+                    removeHitbox(plr.Character)
+                end
             end
         end
     end
-    return oldIndex(self, Index)
-end))
+end)
