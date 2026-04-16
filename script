@@ -136,6 +136,17 @@ local function isKnifeHolder(player)
     return getWeaponType(player) == "knife"
 end
 
+local function isHoldingGun(player)
+    local char = player.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, GUN_KEYWORDS) then
+            return true
+        end
+    end
+    return false
+end
+
 ------------------------------------------------------------
 -- Danger Sprint
 ------------------------------------------------------------
@@ -355,30 +366,24 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 ------------------------------------------------------------
--- Aim Assist (Whitelisted Only)
--- Soft crosshair pull toward nearest knife holder in 1st person
+-- Aim Assist (Whitelisted + Gun holders only)
 ------------------------------------------------------------
 
-local Camera         = workspace.CurrentCamera
-local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
 
-local AIM_ASSIST_RADIUS   = 20   -- max stud distance to a target for assist to activate
-local AIM_ASSIST_ANGLE    = 15   -- degrees from crosshair center to trigger pull
-local AIM_ASSIST_STRENGTH = 0.2  -- 0 to 1, how strongly it pulls (keep low for natural feel)
+local AIM_ASSIST_RADIUS   = 95
+local AIM_ASSIST_ANGLE    = 15
+local AIM_ASSIST_STRENGTH = 1
 
 local function getScreenCenter()
     return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 end
 
-local function getAngleToCrosshair(targetPosition)
+local function getScreenDist(targetPosition)
     local screenPos, onScreen = Camera:WorldToViewportPoint(targetPosition)
-    if not onScreen then return math.huge, nil end
+    if not onScreen then return math.huge end
     local screenVec = Vector2.new(screenPos.X, screenPos.Y)
-    local center = getScreenCenter()
-    local delta = screenVec - center
-    local angle = math.deg(math.atan2(delta.Y, delta.X))
-    local dist = delta.Magnitude
-    return dist, screenVec
+    return (screenVec - getScreenCenter()).Magnitude
 end
 
 local function findAimAssistTarget()
@@ -387,7 +392,7 @@ local function findAimAssistTarget()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
 
-    local bestTarget = nil
+    local bestTarget   = nil
     local bestScreenDist = math.huge
 
     for _, player in ipairs(Players:GetPlayers()) do
@@ -398,12 +403,10 @@ local function findAimAssistTarget()
         local enemyHrp = enemyChar:FindFirstChild("HumanoidRootPart")
         if not enemyHrp then continue end
 
-        -- Check world distance first
         local worldDist = (hrp.Position - enemyHrp.Position).Magnitude
         if worldDist > AIM_ASSIST_RADIUS then continue end
 
-        -- Check how close they are to the crosshair
-        local screenDist, _ = getAngleToCrosshair(enemyHrp.Position)
+        local screenDist = getScreenDist(enemyHrp.Position)
         local angleThreshold = AIM_ASSIST_ANGLE * (Camera.ViewportSize.X / 2) / 90
         if screenDist < angleThreshold and screenDist < bestScreenDist then
             bestScreenDist = screenDist
@@ -416,22 +419,13 @@ end
 
 local function applyAimAssist()
     if not WHITELIST[LocalPlayer.Name] then return end
-    if Camera.CameraType ~= Enum.CameraType.Custom then return end
-
-    -- Only in 1st person
-    if Camera.CFrame.Position:FuzzyEq(
-        LocalPlayer.Character and
-        LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and
-        LocalPlayer.Character.HumanoidRootPart.Position or Vector3.zero,
-        2
-    ) == false then return end
+    if not isHoldingGun(LocalPlayer) then return end
 
     local target = findAimAssistTarget()
     if not target then return end
 
-    local targetPos = target.Position
-    local camCFrame = Camera.CFrame
-    local dirToTarget = (targetPos - camCFrame.Position).Unit
+    local camCFrame    = Camera.CFrame
+    local dirToTarget  = (target.Position - camCFrame.Position).Unit
     local targetCFrame = CFrame.lookAt(camCFrame.Position, camCFrame.Position + dirToTarget)
 
     Camera.CFrame = camCFrame:Lerp(targetCFrame, AIM_ASSIST_STRENGTH)
@@ -458,11 +452,9 @@ RunService.Heartbeat:Connect(function()
             local inDanger = dist <= DANGER_RADIUS
 
             if WHITELIST[LocalPlayer.Name] then
-                -- Juggernaut/whitelisted: boosted stats + danger sprint
                 hum.WalkSpeed = inDanger and SPRINT_SPEED or WALK_SPEED
                 hum.JumpPower = JUMP_POWER
             else
-                -- Innocents: danger sprint only
                 hum.WalkSpeed = inDanger and SPRINT_SPEED or NORMAL_SPEED
             end
         end
