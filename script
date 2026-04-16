@@ -1,14 +1,15 @@
 ------------------------------------------------------------
 -- MM2 Admin Tool
--- Credits + ESP + Stat Looper + Danger Sprint
+-- Credits + ESP + Stat Looper + Danger Sprint + Coin Pathfinding
 -- Made by Tricitiy
 ------------------------------------------------------------
 
-local Players      = game:GetService("Players")
-local RunService   = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer  = Players.LocalPlayer
-local PlayerGui    = LocalPlayer.PlayerGui
+local Players            = game:GetService("Players")
+local RunService         = game:GetService("RunService")
+local TweenService       = game:GetService("TweenService")
+local PathfindingService = game:GetService("PathfindingService")
+local LocalPlayer        = Players.LocalPlayer
+local PlayerGui          = LocalPlayer.PlayerGui
 
 ------------------------------------------------------------
 -- Config
@@ -26,8 +27,10 @@ local SPRINT_SPEED  = 20
 local DANGER_RADIUS = 15
 local NORMAL_SPEED  = 16
 
-local KNIFE_KEYWORDS = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
-local GUN_KEYWORDS   = {"gun", "sheriff", "pistol", "revolver"}
+local KNIFE_KEYWORDS  = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
+local GUN_KEYWORDS    = {"gun", "sheriff", "pistol", "revolver"}
+local TEDDY_KEYWORDS  = {"teddy", "bear", "plush", "stuffed"}
+local COIN_KEYWORDS   = {"coin", "gold", "token", "gem"}
 
 local COLOR_KNIFE    = Color3.fromRGB(255, 50,  50)
 local COLOR_GUN      = Color3.fromRGB(50,  120, 255)
@@ -35,6 +38,9 @@ local COLOR_INNOCENT = Color3.fromRGB(50,  220, 80)
 
 local FILL_TRANSPARENCY    = 0.5
 local OUTLINE_TRANSPARENCY = 0
+
+local WAYPOINT_REACHED_DIST = 4
+local PATH_REFRESH_RATE     = 0.5
 
 ------------------------------------------------------------
 -- Credit Intro
@@ -59,7 +65,7 @@ local function showCredits()
     label.AnchorPoint            = Vector2.new(0.5, 0.5)
     label.BackgroundTransparency = 1
     label.Text                   = "✨Premium MM2✨"
-    label.TextColor3             = Color3.fromRGB(255, 255, 255)
+    label.TextColor3             = Color3.fromRGB(255, 3, 34)
     label.TextTransparency       = 1
     label.TextScaled             = true
     label.Font                   = Enum.Font.GothamBold
@@ -221,18 +227,162 @@ for _, p in ipairs(Players:GetPlayers()) do watchPlayer(p) end
 Players.PlayerAdded:Connect(watchPlayer)
 
 ------------------------------------------------------------
+-- Coin Pathfinding
+------------------------------------------------------------
+local isPathfinding = false
+local currentThread = nil
+
+local agentParams = {
+    AgentHeight   = 5,
+    AgentRadius   = 2,
+    AgentCanJump  = true,
+    AgentCanClimb = true,
+}
+
+local function isHoldingTeddy()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
+            return true
+        end
+    end
+    return false
+end
+
+local function findNearestCoin()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+
+    local nearest, nearestDist = nil, math.huge
+
+    local function searchFolder(parent)
+        for _, obj in ipairs(parent:GetChildren()) do
+            if matchesAny(obj.Name, COIN_KEYWORDS) and obj:IsA("BasePart") then
+                local dist = (hrp.Position - obj.Position).Magnitude
+                if dist < nearestDist then
+                    nearest = obj
+                    nearestDist = dist
+                end
+            end
+            if #obj:GetChildren() > 0 then
+                searchFolder(obj)
+            end
+        end
+    end
+
+    searchFolder(workspace)
+    return nearest
+end
+
+local function moveToCoin(coin)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+
+    local path = PathfindingService:CreatePath(agentParams)
+    local ok = pcall(function()
+        path:ComputeAsync(hrp.Position, coin.Position)
+    end)
+
+    if not ok or path.Status ~= Enum.PathStatus.Success then
+        hum:MoveTo(coin.Position)
+        return
+    end
+
+    local waypoints = path:GetWaypoints()
+    for _, waypoint in ipairs(waypoints) do
+        if not isPathfinding then break end
+        if not isHoldingTeddy() then break end
+        if not coin or not coin.Parent then break end
+
+        if waypoint.Action == Enum.PathWaypointAction.Jump then
+            hum.Jump = true
+        end
+
+        hum:MoveTo(waypoint.Position)
+
+        local timeout = 3
+        local elapsed = 0
+        while elapsed < timeout do
+            if not isPathfinding then break end
+            local dist = (hrp.Position - waypoint.Position).Magnitude
+            if dist <= WAYPOINT_REACHED_DIST then break end
+            if elapsed > 1.5 then
+                hum.Jump = true
+            end
+            elapsed += task.wait(0.1)
+        end
+    end
+end
+
+local function startPathfinding()
+    isPathfinding = true
+    print("[Pathfinding] Started — heading to nearest coin")
+    while isPathfinding and isHoldingTeddy() do
+        local coin = findNearestCoin()
+        if coin then
+            moveToCoin(coin)
+        else
+            print("[Pathfinding] No coins found")
+            task.wait(1)
+        end
+        task.wait(PATH_REFRESH_RATE)
+    end
+    isPathfinding = false
+    print("[Pathfinding] Stopped")
+end
+
+local function stopPathfinding()
+    isPathfinding = false
+    if currentThread then
+        task.cancel(currentThread)
+        currentThread = nil
+    end
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hum and hrp then hum:MoveTo(hrp.Position) end
+    end
+end
+
+local function watchToggle(char)
+    char.ChildAdded:Connect(function(item)
+        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
+            if not isPathfinding then
+                currentThread = task.spawn(startPathfinding)
+            end
+        end
+    end)
+    char.ChildRemoved:Connect(function(item)
+        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
+            stopPathfinding()
+        end
+    end)
+end
+
+if LocalPlayer.Character then watchToggle(LocalPlayer.Character) end
+LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(0.5)
+    watchToggle(char)
+end)
+
+------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
 local lastESP = 0
 
 RunService.Heartbeat:Connect(function()
-    -- ESP refresh every 2 seconds
     if tick() - lastESP >= 2 then
         lastESP = tick()
         updateESP()
     end
 
-    -- Danger sprint (skipped for whitelisted — stat looper handles their speed)
     if not WHITELIST[LocalPlayer.Name] then
         local char = LocalPlayer.Character
         if char then
