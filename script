@@ -19,12 +19,13 @@ local WHITELIST = {
     ["Arsenal_pro298"] = true,
     ["Zedrealm298"]    = true,
     ["Tricitiy"]       = true,
+    ["HunterDoStuff"]  = true,
 }
 
 local WALK_SPEED    = 18.5
 local JUMP_POWER    = 55
-local SPRINT_SPEED  = 20
-local DANGER_RADIUS = 15
+local SPRINT_SPEED  = 22
+local DANGER_RADIUS = 14
 local NORMAL_SPEED  = 16
 
 local KNIFE_KEYWORDS  = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
