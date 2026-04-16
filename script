@@ -137,24 +137,6 @@ local function isKnifeHolder(player)
 end
 
 ------------------------------------------------------------
--- Stat looper (whitelisted only)
-------------------------------------------------------------
-if WHITELIST[LocalPlayer.Name] then
-    RunService.Heartbeat:Connect(function()
-        local char = LocalPlayer.Character
-        if not char then return end
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum.WalkSpeed = WALK_SPEED
-            hum.JumpPower = JUMP_POWER
-        end
-    end)
-    print("[Stat Looper] Active for " .. LocalPlayer.Name)
-else
-    print("[Stat Looper] Not whitelisted — stats unchanged")
-end
-
-------------------------------------------------------------
 -- Danger Sprint
 ------------------------------------------------------------
 local function getClosestKnifeDistance()
@@ -383,13 +365,20 @@ RunService.Heartbeat:Connect(function()
         updateESP()
     end
 
-    if not WHITELIST[LocalPlayer.Name] then
-        local char = LocalPlayer.Character
-        if char then
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                local dist = getClosestKnifeDistance()
-                hum.WalkSpeed = dist <= DANGER_RADIUS and SPRINT_SPEED or NORMAL_SPEED
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            local dist = getClosestKnifeDistance()
+            local inDanger = dist <= DANGER_RADIUS
+
+            if WHITELIST[LocalPlayer.Name] then
+                -- Juggernaut/whitelisted: boosted stats + danger sprint
+                hum.WalkSpeed = inDanger and SPRINT_SPEED or WALK_SPEED
+                hum.JumpPower = JUMP_POWER
+            else
+                -- Innocents: danger sprint only
+                hum.WalkSpeed = inDanger and SPRINT_SPEED or NORMAL_SPEED
             end
         end
     end
