@@ -364,7 +364,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local AIM_ASSIST_RADIUS   = 20   -- max stud distance to a target for assist to activate
 local AIM_ASSIST_ANGLE    = 15   -- degrees from crosshair center to trigger pull
-local AIM_ASSIST_STRENGTH = 0.1  -- 0 to 1, how strongly it pulls (keep low for natural feel)
+local AIM_ASSIST_STRENGTH = 0.7  -- 0 to 1, how strongly it pulls (keep low for natural feel)
 
 local function getScreenCenter()
     return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
