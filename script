@@ -221,16 +221,8 @@ for _, p in ipairs(Players:GetPlayers()) do watchPlayer(p) end
 Players.PlayerAdded:Connect(watchPlayer)
 
 ------------------------------------------------------------
--- Coin Pathfinding
+-- Coin Pathfinding (fixed)
 ------------------------------------------------------------
-local Players           = game:GetService("Players")
-local PathfindingService = game:GetService("PathfindingService")
-
-local LocalPlayer = Players.LocalPlayer
-
-local COIN_KEYWORDS = { "coin", "gold", "token" } -- adjust to match your game
-local WAYPOINT_REACHED_DIST = 2
-
 local isPathfinding = false
 local currentThread = nil
 
@@ -241,10 +233,13 @@ local agentParams = {
     AgentCanClimb = true,
 }
 
-local function matchesAny(name, keywords)
-    name = name:lower()
-    for _, kw in ipairs(keywords) do
-        if name:find(kw, 1, true) then return true end
+local function isHoldingTeddy()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
+            return true
+        end
     end
     return false
 end
@@ -291,6 +286,7 @@ local function moveToCoin(coin)
     end)
 
     if not ok or path.Status ~= Enum.PathStatus.Success then
+        -- fallback: walk directly
         hum:MoveTo(coin.Position)
         task.wait(0.5)
         return
@@ -298,10 +294,12 @@ local function moveToCoin(coin)
 
     local waypoints = path:GetWaypoints()
 
-    for _, waypoint in ipairs(waypoints) do
+    for i, waypoint in ipairs(waypoints) do
         if not isPathfinding then return end
-        if not coin or not coin.Parent then return end
+        if not isHoldingTeddy() then return end
+        if not coin or not coin.Parent then return end -- coin collected, exit immediately
 
+        -- Jump waypoint
         if waypoint.Action == Enum.PathWaypointAction.Jump then
             hum.Jump = true
             task.wait(0.1)
@@ -316,11 +314,12 @@ local function moveToCoin(coin)
 
         while elapsed < timeout do
             if not isPathfinding then return end
-            if not coin or not coin.Parent then return end
+            if not coin or not coin.Parent then return end -- coin collected mid-path
 
             local dist = (hrp.Position - waypoint.Position).Magnitude
             if dist <= WAYPOINT_REACHED_DIST then break end
 
+            -- Stuck detection: if barely moved in 0.5s, jump
             local moved = (hrp.Position - lastPos).Magnitude
             if moved < 0.5 then
                 stuckTime += 0.1
@@ -340,18 +339,19 @@ end
 
 local function startPathfinding()
     isPathfinding = true
-    print("[Farm] Started")
-    while isPathfinding do
+    print("[Pathfinding] Started — heading to nearest coin")
+    while isPathfinding and isHoldingTeddy() do
         local coin = findNearestCoin()
         if coin then
             moveToCoin(coin)
         else
-            print("[Farm] No coins found")
+            print("[Pathfinding] No coins found")
             task.wait(1)
         end
+        -- No extra wait here — loop immediately recalculates after each coin
     end
     isPathfinding = false
-    print("[Farm] Stopped")
+    print("[Pathfinding] Stopped")
 end
 
 local function stopPathfinding()
@@ -368,24 +368,25 @@ local function stopPathfinding()
     end
 end
 
--- ── chat toggle ──────────────────────────────────────────────────────────────
-LocalPlayer.Chatted:Connect(function(message)
-    local msg = message:lower()
-    if msg == "/farm" then
-        if isPathfinding then
-            print("[Farm] Already running — use /farm off to stop")
-        else
-            currentThread = task.spawn(startPathfinding)
+local function watchToggle(char)
+    char.ChildAdded:Connect(function(item)
+        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
+            if not isPathfinding then
+                currentThread = task.spawn(startPathfinding)
+            end
         end
-    elseif msg == "/farm off" then
-        stopPathfinding()
-    end
-end)
+    end)
+    char.ChildRemoved:Connect(function(item)
+        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
+            stopPathfinding()
+        end
+    end)
+end
 
-if LocalPlayer.Character then connectDeath(LocalPlayer.Character) end
+if LocalPlayer.Character then watchToggle(LocalPlayer.Character) end
 LocalPlayer.CharacterAdded:Connect(function(char)
     task.wait(0.5)
-    connectDeath(char)
+    watchToggle(char)
 end)
 
 ------------------------------------------------------------
@@ -455,75 +456,6 @@ local function applyAimAssist()
 end
 
 RunService.Heartbeat:Connect(applyAimAssist)
-
--- ── FLEE MODULE (paste at the bottom of your existing script) ────────────────
-
-local Players           = game:GetService("Players")
-local RunService        = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local fleeActive  = false
-local FLEE_RADIUS = 10   -- studs before fleeing kicks in
-local FLEE_SPEED  = 1    -- increase to run further each frame
-
--- ── chat toggle ─────────────────────────────────────────────────────────────
-localPlayer.Chatted:Connect(function(message)
-    if message:lower() == "/flee" then
-        fleeActive = not fleeActive
-        print(fleeActive and "[Flee] Active" or "[Flee] Disabled")
-    end
-end)
-
--- ── auto-disable on death ────────────────────────────────────────────────────
-local function connectDeath(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    humanoid.Died:Connect(function()
-        fleeActive = false
-        print("[Flee] Disabled — you died")
-    end)
-end
-
-if localPlayer.Character then connectDeath(localPlayer.Character) end
-localPlayer.CharacterAdded:Connect(connectDeath)
-
--- ── main loop ────────────────────────────────────────────────────────────────
-RunService.Heartbeat:Connect(function()
-    if not fleeActive then return end
-
-    local character = localPlayer.Character
-    if not character then return end
-
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if not rootPart or not humanoid then return end
-    if humanoid.Health <= 0 then return end
-
-    local myPos = rootPart.Position
-    local closestThreat = nil
-    local closestDist   = math.huge
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer and isKnifeHolder(player) then
-            local char = player.Character
-            if char then
-                local theirRoot = char:FindFirstChild("HumanoidRootPart")
-                if theirRoot then
-                    local dist = (theirRoot.Position - myPos).Magnitude
-                    if dist <= FLEE_RADIUS and dist < closestDist then
-                        closestDist   = dist
-                        closestThreat = theirRoot.Position
-                    end
-                end
-            end
-        end
-    end
-
-    if closestThreat then
-        local fleeDir = (myPos - closestThreat).Unit
-        local target  = myPos + fleeDir * 20 * FLEE_SPEED
-        humanoid:MoveTo(target)
-    end
-end)
 
 ------------------------------------------------------------
 -- Main loop
