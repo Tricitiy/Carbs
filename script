@@ -221,8 +221,16 @@ for _, p in ipairs(Players:GetPlayers()) do watchPlayer(p) end
 Players.PlayerAdded:Connect(watchPlayer)
 
 ------------------------------------------------------------
--- Coin Pathfinding (fixed)
+-- Coin Pathfinding
 ------------------------------------------------------------
+local Players           = game:GetService("Players")
+local PathfindingService = game:GetService("PathfindingService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local COIN_KEYWORDS = { "coin", "gold", "token" } -- adjust to match your game
+local WAYPOINT_REACHED_DIST = 2
+
 local isPathfinding = false
 local currentThread = nil
 
@@ -233,13 +241,10 @@ local agentParams = {
     AgentCanClimb = true,
 }
 
-local function isHoldingTeddy()
-    local char = LocalPlayer.Character
-    if not char then return false end
-    for _, item in ipairs(char:GetChildren()) do
-        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
-            return true
-        end
+local function matchesAny(name, keywords)
+    name = name:lower()
+    for _, kw in ipairs(keywords) do
+        if name:find(kw, 1, true) then return true end
     end
     return false
 end
@@ -286,7 +291,6 @@ local function moveToCoin(coin)
     end)
 
     if not ok or path.Status ~= Enum.PathStatus.Success then
-        -- fallback: walk directly
         hum:MoveTo(coin.Position)
         task.wait(0.5)
         return
@@ -294,12 +298,10 @@ local function moveToCoin(coin)
 
     local waypoints = path:GetWaypoints()
 
-    for i, waypoint in ipairs(waypoints) do
+    for _, waypoint in ipairs(waypoints) do
         if not isPathfinding then return end
-        if not isHoldingTeddy() then return end
-        if not coin or not coin.Parent then return end -- coin collected, exit immediately
+        if not coin or not coin.Parent then return end
 
-        -- Jump waypoint
         if waypoint.Action == Enum.PathWaypointAction.Jump then
             hum.Jump = true
             task.wait(0.1)
@@ -314,12 +316,11 @@ local function moveToCoin(coin)
 
         while elapsed < timeout do
             if not isPathfinding then return end
-            if not coin or not coin.Parent then return end -- coin collected mid-path
+            if not coin or not coin.Parent then return end
 
             local dist = (hrp.Position - waypoint.Position).Magnitude
             if dist <= WAYPOINT_REACHED_DIST then break end
 
-            -- Stuck detection: if barely moved in 0.5s, jump
             local moved = (hrp.Position - lastPos).Magnitude
             if moved < 0.5 then
                 stuckTime += 0.1
@@ -339,19 +340,18 @@ end
 
 local function startPathfinding()
     isPathfinding = true
-    print("[Pathfinding] Started — heading to nearest coin")
-    while isPathfinding and isHoldingTeddy() do
+    print("[Farm] Started")
+    while isPathfinding do
         local coin = findNearestCoin()
         if coin then
             moveToCoin(coin)
         else
-            print("[Pathfinding] No coins found")
+            print("[Farm] No coins found")
             task.wait(1)
         end
-        -- No extra wait here — loop immediately recalculates after each coin
     end
     isPathfinding = false
-    print("[Pathfinding] Stopped")
+    print("[Farm] Stopped")
 end
 
 local function stopPathfinding()
@@ -368,25 +368,24 @@ local function stopPathfinding()
     end
 end
 
-local function watchToggle(char)
-    char.ChildAdded:Connect(function(item)
-        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
-            if not isPathfinding then
-                currentThread = task.spawn(startPathfinding)
-            end
+-- ── chat toggle ──────────────────────────────────────────────────────────────
+LocalPlayer.Chatted:Connect(function(message)
+    local msg = message:lower()
+    if msg == "/farm" then
+        if isPathfinding then
+            print("[Farm] Already running — use /farm off to stop")
+        else
+            currentThread = task.spawn(startPathfinding)
         end
-    end)
-    char.ChildRemoved:Connect(function(item)
-        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
-            stopPathfinding()
-        end
-    end)
-end
+    elseif msg == "/farm off" then
+        stopPathfinding()
+    end
+end)
 
-if LocalPlayer.Character then watchToggle(LocalPlayer.Character) end
+if LocalPlayer.Character then connectDeath(LocalPlayer.Character) end
 LocalPlayer.CharacterAdded:Connect(function(char)
     task.wait(0.5)
-    watchToggle(char)
+    connectDeath(char)
 end)
 
 ------------------------------------------------------------
