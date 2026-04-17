@@ -16,7 +16,7 @@ local PlayerGui          = LocalPlayer.PlayerGui
 ------------------------------------------------------------
 local WHITELIST = {
     ["TheHonoredQne"]  = true,
-    ["Arsenal_pro298"] = true,
+    ["Arsenal_Pro298"] = true,
     ["Zedrealm298"]    = true,
     ["Tricitiy"]       = true,
     ["HunterDoStuff"]  = true,
