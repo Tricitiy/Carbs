@@ -326,6 +326,60 @@ end
 
 RunService.Heartbeat:Connect(applyAimAssist)
 
+-- [[ SETTINGS ]] --
+local targetName = "GunDrop"
+local ACTIVATOR_KEYWORDS = {"ice", "cream", "cone"}
+
+-- Function to check if you are holding the activator
+local function isHoldingActivator()
+    local character = game.Players.LocalPlayer.Character
+    if not character then return false end
+    
+    -- When a tool is equipped, it is a direct child of the character
+    local tool = character:FindFirstChildOfClass("Tool")
+    
+    if tool then
+        local toolName = string.lower(tool.Name)
+        for _, kw in ipairs(ACTIVATOR_KEYWORDS) do
+            if string.find(toolName, kw) then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+local function bringGun()
+    -- Condition 1: Are you holding the Ice Cream?
+    if not isHoldingActivator() then 
+        return 
+    end
+
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    
+    if not root then return end
+
+    -- Condition 2: Does the Gun exist?
+    local gun = workspace:FindFirstChild(targetName)
+    
+    if gun and gun:IsA("BasePart") then
+        -- Bring the gun to you
+        gun.CFrame = root.CFrame
+        -- Optional: print("Ice Cream Magic: Gun Brought!")
+    end
+end
+
+-- Main Loop
+task.spawn(function()
+    while true do
+        task.wait(0.1) -- Fast enough to snatch, slow enough to not lag
+        bringGun()
+    end
+end)
+
 ------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
