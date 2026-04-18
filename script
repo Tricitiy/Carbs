@@ -326,56 +326,52 @@ end
 
 RunService.Heartbeat:Connect(applyAimAssist)
 
--- [[ SETTINGS ]] --
-local targetName = "GunDrop"
+local Players      = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer  = Players.LocalPlayer
+
+local targetName         = "GunDrop"
 local ACTIVATOR_KEYWORDS = {"ice", "cream", "cone"}
 
--- Function to check if you are holding the activator
-local function isHoldingActivator()
-    local character = game.Players.LocalPlayer.Character
-    if not character then return false end
-    
-    -- When a tool is equipped, it is a direct child of the character
-    local tool = character:FindFirstChildOfClass("Tool")
-    
-    if tool then
-        local toolName = string.lower(tool.Name)
-        for _, kw in ipairs(ACTIVATOR_KEYWORDS) do
-            if string.find(toolName, kw) then
-                return true
-            end
-        end
+local function matchesAny(name, keywords)
+    local lower = string.lower(name)
+    for _, kw in ipairs(keywords) do
+        if string.find(lower, kw) then return true end
     end
-    
+    return false
+end
+
+local function isHoldingActivator()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool and matchesAny(tool.Name, ACTIVATOR_KEYWORDS) then
+        return true
+    end
     return false
 end
 
 local function bringGun()
-    -- Condition 1: Are you holding the Ice Cream?
-    if not isHoldingActivator() then 
-        return 
-    end
+    if not isHoldingActivator() then return end
 
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    local root = character and character:FindFirstChild("HumanoidRootPart")
-    
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
     if not root then return end
 
-    -- Condition 2: Does the Gun exist?
     local gun = workspace:FindFirstChild(targetName)
-    
-    if gun and gun:IsA("BasePart") then
-        -- Bring the gun to you
-        gun.CFrame = root.CFrame
-        -- Optional: print("Ice Cream Magic: Gun Brought!")
-    end
+    if not gun or not gun:IsA("BasePart") then return end
+
+    -- Tween it to you instead of setting CFrame directly
+    TweenService:Create(
+        gun,
+        TweenInfo.new(0.1, Enum.EasingStyle.Linear),
+        {CFrame = root.CFrame}
+    ):Play()
 end
 
--- Main Loop
 task.spawn(function()
     while true do
-        task.wait(0.1) -- Fast enough to snatch, slow enough to not lag
+        task.wait(0.1)
         bringGun()
     end
 end)
