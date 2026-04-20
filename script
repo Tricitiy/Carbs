@@ -229,6 +229,7 @@ local WHITELIST = {
     ["Arsenal_Pro298"] = true,
     ["Zedrealm298"]    = true,
     ["Tricitiy"]       = true,
+    ["HunterDoStuff"]       = true,
 }
 
 local TEDDY_KEYWORDS = {"teddy", "bear", "plush", "stuffed"}
