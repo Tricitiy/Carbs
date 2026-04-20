@@ -384,8 +384,8 @@ local PlayerGui        = LocalPlayer.PlayerGui
 local Camera           = workspace.CurrentCamera
 
 local KNIFE_KEYWORDS   = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
-local MAX_DISTANCE     = 25
-local COOLDOWN_TIME    = 15
+local MAX_DISTANCE     = 50
+local COOLDOWN_TIME    = 10
 
 local function matchesAny(name, keywords)
     local lower = string.lower(name)
