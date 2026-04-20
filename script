@@ -376,6 +376,183 @@ task.spawn(function()
     end
 end)
 
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local TweenService     = game:GetService("TweenService")
+local LocalPlayer      = Players.LocalPlayer
+local PlayerGui        = LocalPlayer.PlayerGui
+local Camera           = workspace.CurrentCamera
+
+local KNIFE_KEYWORDS   = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
+local MAX_DISTANCE     = 25
+local COOLDOWN_TIME    = 15
+
+local function matchesAny(name, keywords)
+    local lower = string.lower(name)
+    for _, kw in ipairs(keywords) do
+        if string.find(lower, kw) then return true end
+    end
+    return false
+end
+
+local function isHoldingKnife()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, KNIFE_KEYWORDS) then
+            return true
+        end
+    end
+    return false
+end
+
+------------------------------------------------------------
+-- Find player most centered on screen within 25 studs
+------------------------------------------------------------
+local function getNearestPlayerToCenter()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+
+    local vpSize    = Camera.ViewportSize
+    local centerX   = vpSize.X / 2
+    local centerY   = vpSize.Y / 2
+    local bestPlayer, bestScore = nil, math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+        local enemyChar = player.Character
+        if not enemyChar then continue end
+        local enemyHrp = enemyChar:FindFirstChild("HumanoidRootPart")
+        local enemyHum = enemyChar:FindFirstChildOfClass("Humanoid")
+        if not enemyHrp or not enemyHum then continue end
+        if enemyHum.Health <= 0 then continue end
+
+        -- Distance check
+        local dist = (hrp.Position - enemyHrp.Position).Magnitude
+        if dist > MAX_DISTANCE then continue end
+
+        -- Screen position check
+        local screenPos, onScreen = Camera:WorldToViewportPoint(enemyHrp.Position)
+        if not onScreen then continue end
+
+        local dx    = screenPos.X - centerX
+        local dy    = screenPos.Y - centerY
+        local score = math.sqrt(dx * dx + dy * dy)
+
+        if score < bestScore then
+            bestScore  = score
+            bestPlayer = player
+        end
+    end
+
+    return bestPlayer
+end
+
+------------------------------------------------------------
+-- Backstab — teleport 1.5 studs behind target
+------------------------------------------------------------
+local function doBackstab()
+    local target = getNearestPlayerToCenter()
+    if not target then
+        print("[Backstab] No target in range")
+        return
+    end
+
+    local char      = LocalPlayer.Character
+    local hrp       = char and char:FindFirstChild("HumanoidRootPart")
+    local enemyChar = target.Character
+    local enemyHrp  = enemyChar and enemyChar:FindFirstChild("HumanoidRootPart")
+    if not hrp or not enemyHrp then return end
+
+    -- 1.5 studs behind the target
+    local behindPosition = enemyHrp.CFrame * CFrame.new(0, 0, 1.5)
+
+    -- Face toward the target from behind
+    hrp.CFrame = CFrame.new(behindPosition.Position, enemyHrp.Position)
+end
+
+------------------------------------------------------------
+-- Backstab Button GUI
+------------------------------------------------------------
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "BackstabGui"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent         = PlayerGui
+
+local button = Instance.new("TextButton")
+button.Size              = UDim2.new(0, 80, 0, 80)
+button.Position          = UDim2.new(1, -95, 0.25, 0) -- 3/4 up from right side
+button.AnchorPoint       = Vector2.new(0, 0.5)
+button.BackgroundColor3  = Color3.fromRGB(180, 30, 30)
+button.TextColor3        = Color3.fromRGB(255, 255, 255)
+button.Text              = "Backstab"
+button.TextScaled        = true
+button.Font              = Enum.Font.GothamBold
+button.BorderSizePixel   = 0
+button.Visible           = false
+button.Parent            = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 14)
+corner.Parent       = button
+
+-- Cooldown label
+local cooldownLabel = Instance.new("TextLabel")
+cooldownLabel.Size                   = UDim2.new(1, 0, 1, 0)
+cooldownLabel.Position               = UDim2.new(0, 0, 0, 0)
+cooldownLabel.BackgroundTransparency = 1
+cooldownLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+cooldownLabel.TextScaled             = true
+cooldownLabel.Font                   = Enum.Font.GothamBold
+cooldownLabel.Text                   = ""
+cooldownLabel.Visible                = false
+cooldownLabel.Parent                 = button
+
+------------------------------------------------------------
+-- Cooldown logic
+------------------------------------------------------------
+local onCooldown = false
+
+local function startCooldown()
+    onCooldown = true
+    button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    button.Text             = ""
+    cooldownLabel.Visible   = true
+
+    local remaining = COOLDOWN_TIME
+    while remaining > 0 do
+        cooldownLabel.Text = tostring(remaining)
+        task.wait(1)
+        remaining -= 1
+    end
+
+    cooldownLabel.Visible   = false
+    cooldownLabel.Text      = ""
+    button.Text             = "Backstab"
+    button.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+    onCooldown = false
+end
+
+------------------------------------------------------------
+-- Button click
+------------------------------------------------------------
+button.MouseButton1Click:Connect(function()
+    if onCooldown then return end
+    if not isHoldingKnife() then return end
+    doBackstab()
+    task.spawn(startCooldown)
+end)
+
+------------------------------------------------------------
+-- Show button only when holding knife
+------------------------------------------------------------
+RunService.Heartbeat:Connect(function()
+    button.Visible = isHoldingKnife()
+end)
+
 ------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
