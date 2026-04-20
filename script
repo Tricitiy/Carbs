@@ -37,7 +37,7 @@ local COLOR_KNIFE    = Color3.fromRGB(255, 50,  50)
 local COLOR_GUN      = Color3.fromRGB(50,  120, 255)
 local COLOR_INNOCENT = Color3.fromRGB(50,  220, 80)
 
-local FILL_TRANSPARENCY    = 0.5
+local FILL_TRANSPARENCY    = 1
 local OUTLINE_TRANSPARENCY = 0
 
 local WAYPOINT_REACHED_DIST = 4
