@@ -555,6 +555,178 @@ RunService.Heartbeat:Connect(function()
 end)
 
 ------------------------------------------------------------
+-- Juggernaut Dash Perk
+-- Quick dash forward when holding gun, 8 second cooldown
+------------------------------------------------------------
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local TweenService     = game:GetService("TweenService")
+local LocalPlayer      = Players.LocalPlayer
+local PlayerGui        = LocalPlayer.PlayerGui
+local Camera           = workspace.CurrentCamera
+
+local GUN_KEYWORDS     = {"gun", "sheriff", "pistol", "revolver"}
+local DASH_DISTANCE    = 17
+local DASH_SPEED       = 55  -- higher = faster dash
+local COOLDOWN_TIME    = 8
+
+local function matchesAny(name, keywords)
+    local lower = string.lower(name)
+    for _, kw in ipairs(keywords) do
+        if string.find(lower, kw) then return true end
+    end
+    return false
+end
+
+local function isHoldingGun()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, GUN_KEYWORDS) then
+            return true
+        end
+    end
+    return false
+end
+
+------------------------------------------------------------
+-- Dash logic with obstacle detection
+------------------------------------------------------------
+local isDashing = false
+
+local function doDash()
+    if isDashing then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+
+    isDashing = true
+
+    -- Lock movement during dash
+    hum.WalkSpeed = 0
+
+    -- Get the forward direction from HumanoidRootPart (ignores camera pitch)
+    local forwardDir = hrp.CFrame.LookVector
+    forwardDir = Vector3.new(forwardDir.X, 0, forwardDir.Z).Unit
+
+    local startPos   = hrp.Position
+    local targetPos  = startPos + forwardDir * DASH_DISTANCE
+
+    -- Raycast forward to check for obstacles
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {char}
+
+    local result = workspace:Raycast(startPos, forwardDir * DASH_DISTANCE, rayParams)
+
+    -- If obstacle hit, stop just before it
+    if result then
+        local hitDist = (result.Position - startPos).Magnitude
+        targetPos = startPos + forwardDir * math.max(0, hitDist - 2)
+    end
+
+    -- Calculate duration based on distance and speed
+    local actualDist = (targetPos - startPos).Magnitude
+    local duration   = actualDist / DASH_SPEED
+
+    -- Tween the dash
+    local tween = TweenService:Create(
+        hrp,
+        TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {CFrame = CFrame.new(targetPos, targetPos + forwardDir)}
+    )
+    tween:Play()
+    tween.Completed:Wait()
+
+    -- Restore walkspeed
+    hum.WalkSpeed = 16
+    isDashing = false
+end
+
+------------------------------------------------------------
+-- Dash Button GUI
+------------------------------------------------------------
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "DashGui"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent         = PlayerGui
+
+local button = Instance.new("TextButton")
+button.Size             = UDim2.new(0, 80, 0, 80)
+button.Position         = UDim2.new(1, -95, 0.25, 0) -- same spot as backstab
+button.AnchorPoint      = Vector2.new(0, 0.5)
+button.BackgroundColor3 = Color3.fromRGB(30, 100, 200)
+button.TextColor3       = Color3.fromRGB(255, 255, 255)
+button.Text             = "Dash"
+button.TextScaled       = true
+button.Font             = Enum.Font.GothamBold
+button.BorderSizePixel  = 0
+button.Visible          = false
+button.Parent           = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 14)
+corner.Parent       = button
+
+-- Cooldown label
+local cooldownLabel = Instance.new("TextLabel")
+cooldownLabel.Size                   = UDim2.new(1, 0, 1, 0)
+cooldownLabel.Position               = UDim2.new(0, 0, 0, 0)
+cooldownLabel.BackgroundTransparency = 1
+cooldownLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+cooldownLabel.TextScaled             = true
+cooldownLabel.Font                   = Enum.Font.GothamBold
+cooldownLabel.Text                   = ""
+cooldownLabel.Visible                = false
+cooldownLabel.Parent                 = button
+
+------------------------------------------------------------
+-- Cooldown logic
+------------------------------------------------------------
+local onCooldown = false
+
+local function startCooldown()
+    onCooldown = true
+    button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    button.Text             = ""
+    cooldownLabel.Visible   = true
+
+    local remaining = COOLDOWN_TIME
+    while remaining > 0 do
+        cooldownLabel.Text = tostring(remaining)
+        task.wait(1)
+        remaining -= 1
+    end
+
+    cooldownLabel.Visible   = false
+    cooldownLabel.Text      = ""
+    button.Text             = "Dash"
+    button.BackgroundColor3 = Color3.fromRGB(30, 100, 200)
+    onCooldown = false
+end
+
+------------------------------------------------------------
+-- Button click
+------------------------------------------------------------
+button.MouseButton1Click:Connect(function()
+    if onCooldown then return end
+    if not isHoldingGun() then return end
+    task.spawn(doDash)
+    task.spawn(startCooldown)
+end)
+
+------------------------------------------------------------
+-- Show button only when holding gun
+------------------------------------------------------------
+RunService.Heartbeat:Connect(function()
+    button.Visible = isHoldingGun()
+end)
+
+------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
 local lastESP = 0
