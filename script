@@ -898,7 +898,7 @@ local function doLaginator()
 
     -- Freeze in place for 0.7 seconds
     local originalSpeed = hum.WalkSpeed
-    hum.WalkSpeed = 0
+    hum.WalkSpeed = 1
     task.wait(0.7)
 
     -- Get forward direction
