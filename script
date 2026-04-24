@@ -740,9 +740,9 @@ local PlayerGui        = LocalPlayer.PlayerGui
 local ICECREAM_KEYWORDS = {"ice", "cream", "cone"}
 local KNIFE_KEYWORDS    = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
 
-local GODFRAME_COOLDOWN  = 20
+local GODFRAME_COOLDOWN  = 10
 local LAGINATOR_COOLDOWN = 12
-local JUKER_COOLDOWN     = 15
+local JUKER_COOLDOWN     = 10
 
 local function matchesAny(name, keywords)
     local lower = string.lower(name)
@@ -859,7 +859,7 @@ local function doGodFrame()
     hum.MaxHealth = math.huge
     hum.Health    = math.huge
 
-    task.wait(3)
+    task.wait(5)
 
     -- Restore health
     if hum and hum.Parent then
@@ -898,7 +898,7 @@ local function doLaginator()
     -- Just freeze position, let animation play naturally (looks like lag)
     local originalSpeed = hum.WalkSpeed
     hum.WalkSpeed = 0
-    task.wait(0.7)
+    task.wait(3)
 
     -- Forward direction + raycast
     local forwardDir = hrp.CFrame.LookVector
