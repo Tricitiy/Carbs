@@ -818,10 +818,9 @@ local function makeButton(text, color, yOffset)
 end
 
 -- Stacked vertically on right side
-local godBtn,      godCD      = makeButton("God\nFrame",   Color3.fromRGB(212, 175, 55),  -95)  -- top
-local laginBtn,    laginCD    = makeButton("Laginator",    Color3.fromRGB(150, 50, 200),   0)   -- middle
-local jukerBtn,    jukerCD    = makeButton("Juker",        Color3.fromRGB(30, 160, 80),    95)  -- bottom
-
+local godBtn,   godCD   = makeButton("God\nFrame",  Color3.fromRGB(212, 175, 55),  -85)  -- top
+local laginBtn, laginCD = makeButton("Laginator",   Color3.fromRGB(150, 50, 200),   10)  -- middle
+local jukerBtn, jukerCD = makeButton("Juker",        Color3.fromRGB(30, 160, 80),   105)  -- bottom
 ------------------------------------------------------------
 -- Cooldown helper
 ------------------------------------------------------------
@@ -896,19 +895,18 @@ local function doLaginator()
 
     print("[Laginator] Activated!")
 
-    -- Freeze in place for 0.7 seconds
+    -- Just freeze position, let animation play naturally (looks like lag)
     local originalSpeed = hum.WalkSpeed
-    hum.WalkSpeed = 1
+    hum.WalkSpeed = 0
     task.wait(0.7)
 
-    -- Get forward direction
+    -- Forward direction + raycast
     local forwardDir = hrp.CFrame.LookVector
     forwardDir = Vector3.new(forwardDir.X, 0, forwardDir.Z).Unit
 
     local startPos  = hrp.Position
     local targetPos = startPos + forwardDir * 20
 
-    -- Raycast for obstacles
     local rayParams = RaycastParams.new()
     rayParams.FilterType = Enum.RaycastFilterType.Exclude
     rayParams.FilterDescendantsInstances = {char}
@@ -919,7 +917,6 @@ local function doLaginator()
         targetPos = startPos + forwardDir * math.max(0, hitDist - 1)
     end
 
-    -- Instant tp
     hrp.CFrame = CFrame.new(targetPos, targetPos + forwardDir)
     hum.WalkSpeed = originalSpeed
     print("[Laginator] Teleported!")
@@ -958,6 +955,13 @@ local function doJuker()
     if not enemyChar then return end
     local enemyHrp = enemyChar:FindFirstChild("HumanoidRootPart")
     if not enemyHrp then return end
+
+    -- 30 stud radius check
+    local dist = (hrp.Position - enemyHrp.Position).Magnitude
+    if dist > 30 then
+        print("[Juker] Knife holder too far — " .. math.floor(dist) .. " studs away")
+        return
+    end
 
     -- 4 studs behind knife holder
     local behindPos = enemyHrp.CFrame * CFrame.new(0, 0, 4)
