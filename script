@@ -727,6 +727,273 @@ RunService.Heartbeat:Connect(function()
 end)
 
 ------------------------------------------------------------
+-- Juggernaut Ice Cream Perks
+-- God Frame + Laginator + Juker
+------------------------------------------------------------
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local TweenService     = game:GetService("TweenService")
+local LocalPlayer      = Players.LocalPlayer
+local PlayerGui        = LocalPlayer.PlayerGui
+
+local ICECREAM_KEYWORDS = {"ice", "cream", "cone"}
+local KNIFE_KEYWORDS    = {"knife", "blade", "dagger", "shiv", "shard", "slash"}
+
+local GODFRAME_COOLDOWN  = 20
+local LAGINATOR_COOLDOWN = 12
+local JUKER_COOLDOWN     = 15
+
+local function matchesAny(name, keywords)
+    local lower = string.lower(name)
+    for _, kw in ipairs(keywords) do
+        if string.find(lower, kw) then return true end
+    end
+    return false
+end
+
+local function isHoldingIceCream()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, ICECREAM_KEYWORDS) then
+            return true
+        end
+    end
+    return false
+end
+
+local function getKnifeHolder()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+        local char = player.Character
+        if not char then continue end
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and matchesAny(item.Name, KNIFE_KEYWORDS) then
+                return player
+            end
+        end
+    end
+    return nil
+end
+
+------------------------------------------------------------
+-- GUI Setup
+------------------------------------------------------------
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "IceCreamPerksGui"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent         = PlayerGui
+
+local function makeButton(text, color, yOffset)
+    local btn = Instance.new("TextButton")
+    btn.Size             = UDim2.new(0, 85, 0, 75)
+    btn.Position         = UDim2.new(1, -95, 0.25, yOffset)
+    btn.AnchorPoint      = Vector2.new(0, 0.5)
+    btn.BackgroundColor3 = color
+    btn.TextColor3       = Color3.fromRGB(255, 255, 255)
+    btn.Text             = text
+    btn.TextScaled       = true
+    btn.Font             = Enum.Font.GothamBold
+    btn.BorderSizePixel  = 0
+    btn.Visible          = false
+    btn.Parent           = screenGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 14)
+    corner.Parent       = btn
+
+    local cdLabel = Instance.new("TextLabel")
+    cdLabel.Size                   = UDim2.new(1, 0, 1, 0)
+    cdLabel.BackgroundTransparency = 1
+    cdLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+    cdLabel.TextScaled             = true
+    cdLabel.Font                   = Enum.Font.GothamBold
+    cdLabel.Text                   = ""
+    cdLabel.Visible                = false
+    cdLabel.Parent                 = btn
+
+    return btn, cdLabel
+end
+
+-- Stacked vertically on right side
+local godBtn,      godCD      = makeButton("God\nFrame",   Color3.fromRGB(212, 175, 55),  -95)  -- top
+local laginBtn,    laginCD    = makeButton("Laginator",    Color3.fromRGB(150, 50, 200),   0)   -- middle
+local jukerBtn,    jukerCD    = makeButton("Juker",        Color3.fromRGB(30, 160, 80),    95)  -- bottom
+
+------------------------------------------------------------
+-- Cooldown helper
+------------------------------------------------------------
+local function runCooldown(btn, cdLabel, duration, originalText, originalColor)
+    btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    btn.Text             = ""
+    cdLabel.Visible      = true
+
+    local remaining = duration
+    while remaining > 0 do
+        cdLabel.Text = tostring(remaining)
+        task.wait(1)
+        remaining -= 1
+    end
+
+    cdLabel.Visible      = false
+    cdLabel.Text         = ""
+    btn.Text             = originalText
+    btn.BackgroundColor3 = originalColor
+end
+
+------------------------------------------------------------
+-- PERK 1: God Frame
+-- Sets health to math.huge for 3 seconds
+------------------------------------------------------------
+local godOnCooldown = false
+
+local function doGodFrame()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    print("[God Frame] Activated!")
+    local originalHealth = hum.MaxHealth
+    hum.MaxHealth = math.huge
+    hum.Health    = math.huge
+
+    task.wait(3)
+
+    -- Restore health
+    if hum and hum.Parent then
+        hum.MaxHealth = originalHealth
+        hum.Health    = originalHealth
+    end
+    print("[God Frame] Ended")
+end
+
+godBtn.MouseButton1Click:Connect(function()
+    if godOnCooldown then return end
+    if not isHoldingIceCream() then return end
+    godOnCooldown = true
+    task.spawn(doGodFrame)
+    task.spawn(function()
+        runCooldown(godBtn, godCD, GODFRAME_COOLDOWN, "God\nFrame", Color3.fromRGB(212, 175, 55))
+        godOnCooldown = false
+    end)
+end)
+
+------------------------------------------------------------
+-- PERK 2: Laginator
+-- Walk in place 0.7s then tp 20 studs forward, stops at obstacles
+------------------------------------------------------------
+local laginOnCooldown = false
+
+local function doLaginator()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+
+    print("[Laginator] Activated!")
+
+    -- Freeze in place for 0.7 seconds
+    local originalSpeed = hum.WalkSpeed
+    hum.WalkSpeed = 0
+    task.wait(0.7)
+
+    -- Get forward direction
+    local forwardDir = hrp.CFrame.LookVector
+    forwardDir = Vector3.new(forwardDir.X, 0, forwardDir.Z).Unit
+
+    local startPos  = hrp.Position
+    local targetPos = startPos + forwardDir * 20
+
+    -- Raycast for obstacles
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    rayParams.FilterDescendantsInstances = {char}
+
+    local result = workspace:Raycast(startPos, forwardDir * 20, rayParams)
+    if result then
+        local hitDist = (result.Position - startPos).Magnitude
+        targetPos = startPos + forwardDir * math.max(0, hitDist - 1)
+    end
+
+    -- Instant tp
+    hrp.CFrame = CFrame.new(targetPos, targetPos + forwardDir)
+    hum.WalkSpeed = originalSpeed
+    print("[Laginator] Teleported!")
+end
+
+laginBtn.MouseButton1Click:Connect(function()
+    if laginOnCooldown then return end
+    if not isHoldingIceCream() then return end
+    laginOnCooldown = true
+    task.spawn(doLaginator)
+    task.spawn(function()
+        runCooldown(laginBtn, laginCD, LAGINATOR_COOLDOWN, "Laginator", Color3.fromRGB(150, 50, 200))
+        laginOnCooldown = false
+    end)
+end)
+
+------------------------------------------------------------
+-- PERK 3: Juker
+-- TP 4 studs behind knife holder, facing opposite direction
+------------------------------------------------------------
+local jukerOnCooldown = false
+
+local function doJuker()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local knifePlayer = getKnifeHolder()
+    if not knifePlayer then
+        print("[Juker] No knife holder found")
+        return
+    end
+
+    local enemyChar = knifePlayer.Character
+    if not enemyChar then return end
+    local enemyHrp = enemyChar:FindFirstChild("HumanoidRootPart")
+    if not enemyHrp then return end
+
+    -- 4 studs behind knife holder
+    local behindPos = enemyHrp.CFrame * CFrame.new(0, 0, 4)
+
+    -- Face OPPOSITE direction of knife holder
+    local oppositeDir = -enemyHrp.CFrame.LookVector
+    oppositeDir = Vector3.new(oppositeDir.X, 0, oppositeDir.Z).Unit
+
+    hrp.CFrame = CFrame.new(behindPos.Position, behindPos.Position + oppositeDir)
+    print("[Juker] Teleported behind knife holder!")
+end
+
+jukerBtn.MouseButton1Click:Connect(function()
+    if jukerOnCooldown then return end
+    if not isHoldingIceCream() then return end
+    jukerOnCooldown = true
+    task.spawn(doJuker)
+    task.spawn(function()
+        runCooldown(jukerBtn, jukerCD, JUKER_COOLDOWN, "Juker", Color3.fromRGB(30, 160, 80))
+        jukerOnCooldown = false
+    end)
+end)
+
+------------------------------------------------------------
+-- Show buttons only when holding ice cream
+------------------------------------------------------------
+RunService.Heartbeat:Connect(function()
+    local holding = isHoldingIceCream()
+    godBtn.Visible   = holding
+    laginBtn.Visible = holding
+    jukerBtn.Visible = holding
+end)
+
+print("[Ice Cream Perks] Ready")
+
+------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
 local lastESP = 0
