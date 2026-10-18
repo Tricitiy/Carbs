@@ -1026,3 +1026,142 @@ RunService.Heartbeat:Connect(function()
 end)
 
 print("[MM2 Admin Tool] All systems active")
+
+
+
+------------------------------------------------------------
+-- Invisibility — toggled by holding ice cream
+-- Based on original script by xXHaNdEROXx
+------------------------------------------------------------
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local LocalPlayer      = Players.LocalPlayer
+
+local ICECREAM_KEYWORDS     = {"ice", "cream", "cone"}
+local INVISIBILITY_POSITION = Vector3.new(-25.95, 84, 3537.55)
+
+local isInvisible = false
+
+------------------------------------------------------------
+-- Keyword matcher
+------------------------------------------------------------
+local function matchesAny(name, keywords)
+    local lower = string.lower(name)
+    for _, kw in ipairs(keywords) do
+        if string.find(lower, kw) then return true end
+    end
+    return false
+end
+
+------------------------------------------------------------
+-- Check if ice cream is EQUIPPED (held, not just in backpack)
+------------------------------------------------------------
+local function isHoldingIceCream()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and matchesAny(item.Name, ICECREAM_KEYWORDS) then
+            return true
+        end
+    end
+    return false
+end
+
+------------------------------------------------------------
+-- Utility
+------------------------------------------------------------
+local function setTransparency(character, transparency)
+    for _, descendant in ipairs(character:GetDescendants()) do
+        if descendant:IsA("BasePart") or descendant:IsA("Decal") then
+            descendant.Transparency = transparency
+        end
+    end
+end
+
+------------------------------------------------------------
+-- Activate invisibility
+------------------------------------------------------------
+local function activateInvisibility()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    isInvisible = true
+
+    local savedCFrame = hrp.CFrame
+
+    -- Move to invisibility position
+    char:MoveTo(INVISIBILITY_POSITION)
+    task.wait(0.15)
+
+    -- Create invisible seat
+    local seat          = Instance.new("Seat")
+    seat.Name           = "invischair"
+    seat.Anchored       = false
+    seat.CanCollide     = false
+    seat.Transparency   = 1
+    seat.Position       = INVISIBILITY_POSITION
+    seat.Parent         = workspace
+
+    -- Weld seat to torso
+    local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+    if torso then
+        local weld      = Instance.new("Weld")
+        weld.Part0      = seat
+        weld.Part1      = torso
+        weld.Parent     = seat
+    end
+
+    task.wait()
+    seat.CFrame = savedCFrame
+
+    -- Make character transparent
+    setTransparency(char, 1)
+
+    print("[Invisibility] ON")
+end
+
+------------------------------------------------------------
+-- Deactivate invisibility
+------------------------------------------------------------
+local function deactivateInvisibility()
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    isInvisible = false
+
+    -- Remove invisible chair
+    local invisChair = workspace:FindFirstChild("invischair")
+    if invisChair then invisChair:Destroy() end
+
+    -- Restore visibility
+    setTransparency(char, 0)
+
+    print("[Invisibility] OFF")
+end
+
+------------------------------------------------------------
+-- Reset on respawn
+------------------------------------------------------------
+LocalPlayer.CharacterAdded:Connect(function()
+    isInvisible = false
+    local invisChair = workspace:FindFirstChild("invischair")
+    if invisChair then invisChair:Destroy() end
+end)
+
+------------------------------------------------------------
+-- Main loop — toggle based on ice cream equip state
+------------------------------------------------------------
+RunService.Heartbeat:Connect(function()
+    local holding = isHoldingIceCream()
+
+    if holding and not isInvisible then
+        activateInvisibility()
+    elseif not holding and isInvisible then
+        deactivateInvisibility()
+    end
+end)
+
+print("[Invisibility] Ready — equip ice cream to activate")
